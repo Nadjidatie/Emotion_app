@@ -1,8 +1,13 @@
 import 'package:emotion_app/services/chatbot_service.dart';
+import 'package:emotion_app/services/profile_service.dart';
 import 'package:flutter/material.dart';
 
 class ChatPage extends StatefulWidget {
-  const ChatPage({super.key});
+  final String userId;
+  const ChatPage({
+    super.key,
+    required this.userId,
+    });
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -11,11 +16,30 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
   final TextEditingController controller = TextEditingController();
   final ChatbotService chatbotService = ChatbotService();
+  final ProfileService profilService = ProfileService();
+
+  String prenom="";
+
+  @override
+  void initState(){
+    super.initState();
+    loadPrenom();
+  }
+
+  Future<void> loadPrenom() async{
+    final p = await profilService.getPrenom(widget.userId);
+    setState(() {
+      prenom = p;
+      messages[0]['text'] = "Bonjour $prenom 👋 ! Comment vas-tu ajourd'hui ?";
+    });
+  }
+
+  //String prenom = profilService.getPrenom(userId);
 
   final List<Map<String, String>> messages = [
     {
       'role' : 'bot',
-      'text': "Bonjour 👋, je suis là pour t'écouter. Comment te sens‑tu ?",
+      'text': "Bonjour 👋! Comment vas-tu aujourd'hui ?",
     },
   ];  
 

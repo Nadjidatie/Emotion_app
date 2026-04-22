@@ -90,7 +90,7 @@ class Navigationbarboutton extends StatelessWidget {
                   Navigator.push(
                     context, 
                     MaterialPageRoute(
-                      builder: (context) => ChatPage(),
+                      builder: (context) => ChatPage(userId: userId,),
                       )
                     );
                 },

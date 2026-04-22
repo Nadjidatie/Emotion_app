@@ -69,4 +69,24 @@ class ProfileService {
     return data != null;
   }
 
+  Future<String> getPrenom(String userId) async{
+    final user = supabase.auth.currentSession;
+
+    if(user == null ){
+      return "";
+    }
+
+    final data = await supabase
+      .from('profiles')
+      .select()
+      .eq('id', userId)
+      .maybeSingle();
+
+      if(data == null){
+        return "";
+      }
+
+      return data['prenom'];
+  }
+
 } 
