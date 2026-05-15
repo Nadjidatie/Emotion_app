@@ -30,11 +30,19 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   supabase_flutter: ^2.12.2
+
+  # === Cycle Harmony ===
+  table_calendar: ^3.1.2          # Calendrier interactif avec cellules colorées (calendarBuilders)
+  fl_chart: ^0.69.0               # Graphiques pour la page de statistiques
+  flutter_local_notifications: ^17.2.3  # Service de rappels (questionnaire quotidien, prédictions)
+  intl: ^0.20.2                   # Formatage des dates (fr_FR), requis par table_calendar (version pinned by flutter_localizations)
 
 dev_dependencies:
   flutter_test:
