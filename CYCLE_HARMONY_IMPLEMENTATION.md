@@ -271,7 +271,6 @@ Un bouton « Avez-vous vos règles aujourd'hui ? » avec texte dynamique et i
 Une carte de phase dynamique pour l'écran principal. Abonné à `CycleService` via `addListener` — mis à jour automatiquement lors de l'enregistrement d'un nouveau questionnaire ou de la modification des paramètres.
 
 Contient :
-
 - Icône et nom de la phase
 - Numéro du jour du cycle
 - Description de la phase
