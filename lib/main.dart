@@ -1,9 +1,9 @@
 // import 'package:emotion_app/Pages/Connexion.dart';
 // import 'package:emotion_app/Pages/Inscription.dart';
 // import 'package:emotion_app/Pages/createProfil.dart';
-import 'package:emotion_app/Pages/acceuil.dart';
-import 'package:emotion_app/Pages/chat_page.dart';
-import 'package:emotion_app/Pages/createProfil.dart';
+// import 'package:emotion_app/Pages/acceuil.dart';
+// import 'package:emotion_app/Pages/chat_page.dart';
+// import 'package:emotion_app/Pages/createProfil.dart';
 import 'package:emotion_app/auth/auth_gate.dart';
 // import 'package:emotion_app/Pages/Inscription.dart';
 import 'package:flutter/material.dart';
@@ -27,6 +27,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       home: AuthGate(),
+      
     );
   }
 }

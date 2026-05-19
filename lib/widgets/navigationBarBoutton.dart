@@ -5,6 +5,7 @@ import 'package:emotion_app/Pages/statPage.dart';
 import 'package:emotion_app/services/profile_service.dart';
 import 'package:emotion_app/widgets/menuItem.dart';
 import 'package:flutter/material.dart';
+import 'package:emotion_app/widgets/profilPhotoDefaut.dart';
 
 class Navigationbarboutton extends StatelessWidget {
   final String userId;
@@ -64,7 +65,7 @@ class Navigationbarboutton extends StatelessWidget {
                   Navigator.push(
                     context, 
                     MaterialPageRoute(
-                      builder: (context) => StatPage(),
+                      builder: (context) => StatPage(userId: userId,),
                       )
                     );
                 },
@@ -77,7 +78,7 @@ class Navigationbarboutton extends StatelessWidget {
                   Navigator.push(
                     context, 
                     MaterialPageRoute(
-                      builder: (context) => ProfilPage(),
+                      builder: (context) => ProfilPage(userId: userId, nom: "Nom", imageUrl: "https://example.com/image.jpg", joursMembre: 0, genre: Sexe.homme),
                       )
                     );
                 },
@@ -99,11 +100,26 @@ class Navigationbarboutton extends StatelessWidget {
               MenuItem(
                 icon: Icons.person,
                 texte: "Profil",
-                onTap: (){
+                onTap: () async {
+                  final service = ProfileService();
+                  final profil = await service.getProfil(userId);
+
+                  if(profil == null) return ;
+
+                  final genre = profil['genre'] == "homme" 
+                    ? Sexe.homme : profil['genre'] == "femme" 
+                    ? Sexe.femme : Sexe.autre;
+
                   Navigator.push(
                     context, 
                     MaterialPageRoute(
-                      builder: (context) => ProfilPage(),
+                      builder: (context) => ProfilPage(
+                       userId: userId, 
+                       nom: profil['nom'],
+                       imageUrl: profil['image_url'] ?? '',
+                       joursMembre: profil['jours_membre'],
+                        genre: genre
+                        ),
                       )
                     );
                 },
