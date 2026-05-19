@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 class StatPage extends StatefulWidget {
-  const StatPage({super.key});
+  final String userId;
+  const StatPage({super.key, required this.userId});
 
   @override
   State<StatPage> createState() => _StatPageState();
