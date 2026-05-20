@@ -4,10 +4,8 @@ import 'package:emotion_app/services/cycleService.dart';
 import 'package:emotion_app/widgets/choixEtiquettes.dart';
 import 'package:emotion_app/widgets/menstruationToogle.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
-import '../models/cycle_phase.dart';
-import '../models/journalQuotidien.dart';
-import '../widgets/choixEtiquettes.dart';
 import '../widgets/questionCard.dart';
 import '../widgets/curseurEvaluation.dart';
 

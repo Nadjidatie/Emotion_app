@@ -30,19 +30,14 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_localizations:
-    sdk: flutter
+  intl: ^0.20.2
+  image_picker: ^1.0.7
+
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   supabase_flutter: ^2.12.2
-
-  # === Cycle Harmony ===
-  table_calendar: ^3.1.2          # Calendrier interactif avec cellules colorées (calendarBuilders)
-  fl_chart: ^0.69.0               # Graphiques pour la page de statistiques
-  flutter_local_notifications: ^17.2.3  # Service de rappels (questionnaire quotidien, prédictions)
-  intl: ^0.20.2                   # Formatage des dates (fr_FR), requis par table_calendar (version pinned by flutter_localizations)
 
 dev_dependencies:
   flutter_test:
@@ -53,7 +48,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

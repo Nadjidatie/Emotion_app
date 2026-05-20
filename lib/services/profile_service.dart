@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:io';
 
 class ProfileService {
   final supabase = Supabase.instance.client;
@@ -84,26 +85,89 @@ class ProfileService {
 
       if (data == null) return null;
 
-      final createdAt = user.createdAt;
-      DateTime dateInscription;
-      if (createdAt is String) {
-        dateInscription = DateTime.tryParse(createdAt) ?? DateTime.now();
-      } else {
-        dateInscription = DateTime.now();
-      }
-
-      final joursMembre = DateTime.now().difference(dateInscription).inDays;
+      final dateInscription = DateTime.tryParse(user.createdAt) ?? DateTime.now();
 
       return {
         'nom': data['nom'] ?? '',
         'prenom': data['prenom'] ?? '',
         'genre': data['genre'] ?? 'autre',
+        'date_naissance': data['date_naissance'],
+        'objective': data['objective'] ?? '',
         'image_url': data['image_url'],
-        'jours_membre': joursMembre,
+        'jours_membre': DateTime.now().difference(dateInscription).inDays,
       };
     } catch (e) {
       print('ERREUR getProfil: $e');
       return null;
     }
   }
+
+  Future<void> updateProfil(Map<String, dynamic> fields) async {
+      final user = supabase.auth.currentUser;
+      if (user == null) throw Exception("Utilisateur non connecté");
+  
+      try {
+        await supabase
+            .from('profiles')
+            .update(fields)
+            .eq('id', user.id);
+      } catch (e, st) {
+        print('EXCEPTION updateProfil: $e');
+        print('STACK: $st');
+        rethrow;
+      }
+  }
+
+
+
+  Future<String> uploadPhoto(File imageFile) async {
+    final user = supabase.auth.currentUser;
+    if (user == null) throw Exception("Utilisateur non connecté");
+ 
+    final ext = imageFile.path.split('.').last.toLowerCase();
+    final fileName = '${user.id}/avatar.$ext';
+ 
+    try {
+      // Upload dans le bucket "avatars"
+      await supabase.storage.from('avatars').upload(
+            fileName,
+            imageFile,
+            fileOptions: const FileOptions(upsert: true),
+          );
+ 
+      // Récupère l'URL publique
+      final publicUrl =
+          supabase.storage.from('avatars').getPublicUrl(fileName);
+ 
+      // Met à jour image_url dans profiles
+      await updateProfil({'image_url': publicUrl});
+ 
+      return publicUrl;
+    } catch (e, st) {
+      print('EXCEPTION uploadPhoto: $e');
+      print('STACK: $st');
+      rethrow;
+    }
+  }
+
+  Future<void> supprimerPhoto() async {
+    final user = supabase.auth.currentUser;
+    if (user == null) throw Exception("Utilisateur non connecté");
+ 
+    try {
+      // Supprime les deux formats possibles
+      await supabase.storage.from('avatars').remove([
+        '${user.id}/avatar.jpg',
+        '${user.id}/avatar.png',
+        '${user.id}/avatar.jpeg',
+      ]);
+ 
+      await updateProfil({'image_url': null});
+    } catch (e) {
+      print('EXCEPTION supprimerPhoto: $e');
+    }
+  }
+
+
+  
 } 

@@ -1,39 +1,18 @@
 import 'package:emotion_app/model/cycle_phase.dart';
 import 'package:emotion_app/model/journalQuotidien.dart';
+
 import 'package:flutter/foundation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../models/cycle_phase.dart';
-import '../models/journalQuotidien.dart';
-
-/// Service central de la logique du cycle.
-///
-/// Responsabilités :
-///  1. Calculer la phase courante à partir du dernier début de règles.
-///  2. Stocker les logs quotidiens (en mémoire pour l'instant — Étape 4 du
-///     cahier des charges remplacera ce stockage par Supabase).
-///  3. Exposer un [ChangeNotifier] pour que l'UI se rafraîchisse quand un
-///     nouveau log est sauvegardé.
-///
-/// Implémenté en singleton pour partager les données entre les écrans
-/// (Accueil, Calendrier, Statistiques) sans avoir à introduire un état
-/// global plus complexe (Provider/Riverpod) — l'app reste légère.
 class CycleService extends ChangeNotifier {
   CycleService._internal();
   static final CycleService instance = CycleService._internal();
 
-  /// Date du début des dernières règles (paramètre utilisateur).
-  /// Initialisée à une valeur par défaut pour que la démo fonctionne dès
-  /// le premier lancement, sans avoir à passer par les réglages.
-  DateTime _dernieresRegles =
-      DateTime.now().subtract(const Duration(days: 12));
+  final _supabase = Supabase.instance.client;
 
-  /// Longueur moyenne du cycle (par défaut : 28 jours).
+  DateTime _dernieresRegles = DateTime.now().subtract(const Duration(days: 12));
   int _longueurCycle = 28;
-
-  /// Durée moyenne des règles (par défaut : 5 jours).
   int _dureeRegles = 5;
-
-  /// Logs indexés par date "YYYY-MM-DD".
   final Map<String, JournalQuotidien> _logs = {};
 
   // === Getters ===
@@ -42,30 +21,119 @@ class CycleService extends ChangeNotifier {
   int get longueurCycle => _longueurCycle;
   int get dureeRegles => _dureeRegles;
 
-  /// Tous les logs (utile pour les statistiques).
   List<JournalQuotidien> get tousLesLogs =>
       _logs.values.toList()..sort((a, b) => a.date.compareTo(b.date));
 
-  // === Mutations ===
+  // === Initialisation depuis Supabase ========================================
 
-  void definirParametresCycle({
+  /// À appeler au démarrage (ex: dans AuthGate ou Accueil).
+  /// Charge les paramètres du cycle ET tous les logs depuis Supabase.
+  Future<void> initialiserDepuisSupabase() async {
+    final userId = _supabase.auth.currentUser?.id;
+    if (userId == null) return;
+
+    await Future.wait([
+      _chargerParametres(userId),
+      _chargerLogsDepuisSupabase(userId),
+    ]);
+
+    notifyListeners();
+  }
+
+  Future<void> _chargerParametres(String userId) async {
+    try {
+      final data = await _supabase
+          .from('profiles')
+          .select('dernieres_regles, longueur_cycle, duree_regles')
+          .eq('id', userId)
+          .maybeSingle();
+
+      if (data == null) return;
+
+      if (data['dernieres_regles'] != null) {
+        _dernieresRegles =
+            DateTime.tryParse(data['dernieres_regles']) ?? _dernieresRegles;
+      }
+      if (data['longueur_cycle'] != null) {
+        _longueurCycle = data['longueur_cycle'] as int;
+      }
+      if (data['duree_regles'] != null) {
+        _dureeRegles = data['duree_regles'] as int;
+      }
+    } catch (e) {
+      print('ERREUR _chargerParametres: $e');
+    }
+  }
+
+  Future<void> _chargerLogsDepuisSupabase(String userId) async {
+    try {
+      final rows = await _supabase
+          .from('journal_quotidien')
+          .select()
+          .eq('user_id', userId)
+          .order('date', ascending: true);
+
+      _logs.clear();
+      for (final row in rows) {
+        final log = JournalQuotidien.fromJson(row as Map<String, dynamic>);
+        _logs[_cle(log.date)] = log;
+      }
+    } catch (e) {
+      print('ERREUR _chargerLogsDepuisSupabase: $e');
+    }
+  }
+
+  // === Paramètres du cycle ===================================================
+
+  /// Met à jour les paramètres localement ET dans Supabase (table profiles).
+  Future<void> definirParametresCycle({
     required DateTime dernieresRegles,
     int? longueurCycle,
     int? dureeRegles,
-  }) {
+  }) async {
     _dernieresRegles = dernieresRegles;
     if (longueurCycle != null) _longueurCycle = longueurCycle;
     if (dureeRegles != null) _dureeRegles = dureeRegles;
     notifyListeners();
+
+    final userId = _supabase.auth.currentUser?.id;
+    if (userId == null) return;
+
+    try {
+      await _supabase.from('profiles').update({
+        'dernieres_regles': dernieresRegles.toIso8601String().substring(0, 10),
+        'longueur_cycle': _longueurCycle,
+        'duree_regles': _dureeRegles,
+      }).eq('id', userId);
+    } catch (e) {
+      print('ERREUR sauvegarde paramètres cycle: $e');
+    }
   }
 
-  /// Sauvegarde (ou écrase) un log pour la date donnée.
-  void sauvegarderLog(JournalQuotidien log) {
+  // === Logs quotidiens =======================================================
+
+  /// Sauvegarde un log localement ET dans Supabase.
+  Future<void> sauvegarderLog(JournalQuotidien log) async {
     _logs[_cle(log.date)] = log;
     notifyListeners();
+
+    final userId = _supabase.auth.currentUser?.id;
+    if (userId == null) return;
+
+    try {
+      final json = log.toJson();
+      json['user_id'] = userId;
+
+      await _supabase.from('journal_quotidien').upsert(
+        json,
+        onConflict: 'user_id,date',
+      );
+    } catch (e) {
+      print('ERREUR sauvegarderLog: $e');
+    }
   }
 
-  /// Charge en masse (utilisé par MockDataService et plus tard par Supabase).
+  /// Charge en masse depuis une liste (MockData ou migration).
   void chargerLogs(Iterable<JournalQuotidien> logs) {
     for (final log in logs) {
       _logs[_cle(log.date)] = log;
@@ -76,46 +144,29 @@ class CycleService extends ChangeNotifier {
   /// Récupère le log d'une date donnée, ou null s'il n'existe pas.
   JournalQuotidien? logPour(DateTime date) => _logs[_cle(date)];
 
-  // === Logique cycle ===
+  // === Logique cycle =========================================================
 
-  /// Numéro du jour dans le cycle pour une date donnée (1 = premier jour des règles).
   int jourDuCycle(DateTime date) {
     final diff = _dateOnly(date).difference(_dateOnly(_dernieresRegles)).inDays;
     if (diff < 0) {
-      // Avant le début des dernières règles — on rebascule en arrière.
       final reste = diff % _longueurCycle;
       return reste == 0 ? _longueurCycle : _longueurCycle + reste;
     }
     return (diff % _longueurCycle) + 1;
   }
 
-  /// Détermine la phase du cycle pour une date donnée.
-  ///
-  /// Découpage classique pour un cycle de 28 jours :
-  ///  - jours 1-5  : menstruelle
-  ///  - jours 6-13 : folliculaire
-  ///  - jours 14-16: ovulatoire
-  ///  - jours 17-28: lutéale
-  ///
-  /// Adapté proportionnellement si la longueur du cycle est différente.
   CyclePhase phasePour(DateTime date) {
     final jour = jourDuCycle(date);
-
     if (jour <= _dureeRegles) return CyclePhase.menstruelle;
-
-    // Ovulation autour du jour (longueurCycle - 14).
     final jourOvulation = _longueurCycle - 14;
     if (jour < jourOvulation) return CyclePhase.folliculaire;
     if (jour <= jourOvulation + 2) return CyclePhase.ovulatoire;
     return CyclePhase.luteale;
   }
 
-  /// Indique si une date donnée tombe pendant les règles
-  /// (utilisé par le calendrier pour le marqueur rouge).
   bool estJourDeRegles(DateTime date) =>
       phasePour(date) == CyclePhase.menstruelle;
 
-  /// Date prévue des prochaines règles.
   DateTime prochainesRegles() {
     final aujourdhui = _dateOnly(DateTime.now());
     final jourActuel = jourDuCycle(aujourdhui);
@@ -123,7 +174,7 @@ class CycleService extends ChangeNotifier {
     return aujourdhui.add(Duration(days: joursRestants));
   }
 
-  // === Helpers privés ===
+  // === Helpers privés ========================================================
 
   static String _cle(DateTime date) {
     final d = _dateOnly(date);
