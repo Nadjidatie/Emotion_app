@@ -81,7 +81,7 @@ class Navigationbarboutton extends StatelessWidget {
                  isSelected: currentRoute == 'questionnaire',
                 onTap: () => Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (_) => const AjouterHumeurQuestionnaire()),
+                  MaterialPageRoute(builder: (_) => const ajouterHumeurQuestionnaire()),
                 ),
               ),
 
@@ -111,18 +111,14 @@ class Navigationbarboutton extends StatelessWidget {
                     ? Sexe.homme : profil['genre'] == "femme" 
                     ? Sexe.femme : Sexe.autre;
 
+                  if (!context.mounted) return;
+
                   Navigator.push(
                     context, 
                     MaterialPageRoute(
-                      builder: (context) => ProfilPage(
-                       userId: userId, 
-                       nom: profil['nom'],
-                       imageUrl: profil['image_url'] ?? '',
-                       joursMembre: profil['jours_membre'],
-                        genre: genre
-                        ),
-                      )
-                    );
+                      builder: (context) => ProfilPage(),
+                    )
+                  );
                 },
               )
 

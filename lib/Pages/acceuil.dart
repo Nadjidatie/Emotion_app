@@ -1,4 +1,5 @@
 import 'package:emotion_app/auth/auth_service.dart';
+import 'package:emotion_app/services/cycleService.dart';
 import 'package:emotion_app/widgets/logoutBoutton.dart';
 import 'package:emotion_app/widgets/navigationBarBoutton.dart';
 import 'package:flutter/material.dart';
@@ -17,6 +18,12 @@ class Acceuil extends StatefulWidget {
 }
 
 class _AcceuilState extends State<Acceuil> {
+
+    @override
+  void initState() {
+    super.initState();
+    CycleService.instance.initialiserDepuisSupabase();
+  }
 
   @override
   Widget build(BuildContext context) {
