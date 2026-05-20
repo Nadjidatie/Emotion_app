@@ -1,12 +1,7 @@
 import 'package:flutter/material.dart';
 
-/// Carte enveloppe pour une question du questionnaire.
-///
-/// Réutilisable pour TOUS les types de questions (slider, chips, time picker,
-/// switch, etc.) — c'est la brique qui satisfait le critère
-/// **Réutilisation des widgets** du cahier des charges.
-///
-/// Pattern : on passe le titre, le sous-titre et l'enfant (le contrôle réel).
+
+
 class QuestionCard extends StatelessWidget {
   final String titre;
   final String? sousTitre;
