@@ -1,4 +1,5 @@
 import 'package:emotion_app/Pages/acceuil.dart';
+import 'package:emotion_app/Pages/ajouterHumeurQuestionnaire.dart';
 import 'package:emotion_app/Pages/chat_page.dart';
 import 'package:emotion_app/Pages/profilPage.dart';
 import 'package:emotion_app/Pages/statPage.dart';
@@ -9,9 +10,12 @@ import 'package:emotion_app/widgets/profilPhotoDefaut.dart';
 
 class Navigationbarboutton extends StatelessWidget {
   final String userId;
+  final String currentRoute;
+
   const Navigationbarboutton({
     super.key,
-    required this.userId
+    required this.userId,
+    this.currentRoute = 'acceuil',
     });
 
   @override
@@ -74,14 +78,11 @@ class Navigationbarboutton extends StatelessWidget {
               MenuItem(
                 icon: Icons.add_circle,
                 texte: "Ajouter humeur",
-                onTap: (){
-                  Navigator.push(
-                    context, 
-                    MaterialPageRoute(
-                      builder: (context) => ProfilPage(userId: userId, nom: "Nom", imageUrl: "https://example.com/image.jpg", joursMembre: 0, genre: Sexe.homme),
-                      )
-                    );
-                },
+                 isSelected: currentRoute == 'questionnaire',
+                onTap: () => Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AjouterHumeurQuestionnaire()),
+                ),
               ),
 
               MenuItem(
