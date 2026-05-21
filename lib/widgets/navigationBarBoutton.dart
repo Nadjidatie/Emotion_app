@@ -1,5 +1,6 @@
 import 'package:emotion_app/Pages/acceuil.dart';
 import 'package:emotion_app/Pages/ajouterHumeurQuestionnaire.dart';
+import 'package:emotion_app/Pages/calendarPage.dart';
 import 'package:emotion_app/Pages/chat_page.dart';
 import 'package:emotion_app/Pages/profilPage.dart';
 import 'package:emotion_app/Pages/statPage.dart';
@@ -57,6 +58,20 @@ class Navigationbarboutton extends StatelessWidget {
                     context, 
                     MaterialPageRoute(
                       builder: (context) => Acceuil(userId: userId),
+                      )
+                    );
+                },
+              ),
+
+              MenuItem(
+                icon: Icons.calendar_month,
+                texte: 'Calendrier',
+                isSelected: currentRoute == 'calendrier',
+                onTap: () => (){
+                  Navigator.push(
+                    context, 
+                    MaterialPageRoute(
+                      builder: (context) => const CalendrierPage(),
                       )
                     );
                 },
