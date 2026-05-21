@@ -5,22 +5,19 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 
-import '../models/cycle_phase.dart';
 import 'questionnairePage.dart';
 
-/// Calendrier interactif — pierre angulaire du projet.
-///
-/// Cellules colorées par [DailyLog.couleurDuJour] (formule du score).
-/// Petit point rouge sous les jours de menstruation.
+
+
 /// Tap → fiche détaillée du jour avec score et symptômes.
-class CalendarPage extends StatefulWidget {
-  const CalendarPage({super.key});
+class CalendrierPage extends StatefulWidget {
+  const CalendrierPage({super.key});
 
   @override
-  State<CalendarPage> createState() => _CalendarPageState();
+  State<CalendrierPage> createState() => _CalendrierPageState();
 }
 
-class _CalendarPageState extends State<CalendarPage> {
+class _CalendrierPageState extends State<CalendrierPage> {
   DateTime _moisCourant = DateTime.now();
   DateTime _jourSelectionne = DateTime.now();
   CalendarFormat _format = CalendarFormat.month;
