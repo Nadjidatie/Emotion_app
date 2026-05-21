@@ -1,6 +1,6 @@
+import 'package:emotion_app/Pages/CalendrierPage.dart';
 import 'package:emotion_app/Pages/acceuil.dart';
 import 'package:emotion_app/Pages/ajouterHumeurQuestionnaire.dart';
-import 'package:emotion_app/Pages/calendarPage.dart';
 import 'package:emotion_app/Pages/chat_page.dart';
 import 'package:emotion_app/Pages/profilPage.dart';
 import 'package:emotion_app/Pages/statPage.dart';
@@ -71,7 +71,7 @@ class Navigationbarboutton extends StatelessWidget {
                   Navigator.push(
                     context, 
                     MaterialPageRoute(
-                      builder: (context) => const CalendrierPage(),
+                      builder: (context) => CalendrierPage(),
                       )
                     );
                 },
