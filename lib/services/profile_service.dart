@@ -128,11 +128,14 @@ class ProfileService {
     final fileName = '${user.id}/avatar.$ext';
  
     try {
+    // Lit les bytes directement avant l'upload
+// car ici le chemin de l'image est sauvegarder temporairement dans le téléphone et peut être supprimé après l'upload, contrairement à l'URL qui doit rester accessible.  
+          final bytes = await imageFile.readAsBytes();
       // Upload dans le bucket "avatars"
-      await supabase.storage.from('avatars').upload(
+      await supabase.storage.from('avatars').uploadBinary(
             fileName,
-            imageFile,
-            fileOptions: const FileOptions(upsert: true),
+            bytes,
+            fileOptions: FileOptions(upsert: true, contentType: 'image/$ext'),
           );
  
       // Récupère l'URL publique

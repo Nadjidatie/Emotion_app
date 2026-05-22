@@ -9,12 +9,7 @@ import 'package:intl/intl.dart';
 import '../widgets/questionCard.dart';
 import '../widgets/curseurEvaluation.dart';
 
-/// Questionnaire quotidien.
-///
-/// Étape 3 du cahier des charges : "Sauvegarder" insère un [JournalQuotidien] dans
-/// [CycleService] (stockage en mémoire). À l'étape 4, on remplacera juste le
-/// corps de [_sauvegarder] par un appel Supabase, le reste de l'écran ne
-/// bougera pas.
+
 class ajouterHumeurQuestionnaire extends StatefulWidget {
   /// Date pour laquelle on remplit le questionnaire.
   /// Par défaut : aujourd'hui.
@@ -87,7 +82,7 @@ class _ajouterHumeurQuestionnaireState extends State<ajouterHumeurQuestionnaire>
     super.dispose();
   }
 
-  void _sauvegarder() {
+  Future<void> _sauvegarder() async {
     final log = JournalQuotidien(
       date: _date,
       humeur: _humeur,
@@ -103,7 +98,10 @@ class _ajouterHumeurQuestionnaireState extends State<ajouterHumeurQuestionnaire>
           ? null
           : _noteController.text.trim(),
     );
-    CycleService.instance.sauvegarderLog(log);
+
+    await CycleService.instance.sauvegarderLog(log);
+
+    if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(

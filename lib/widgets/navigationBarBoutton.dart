@@ -1,4 +1,4 @@
-import 'package:emotion_app/Pages/CalendrierPage.dart';
+import 'package:emotion_app/Pages/calendrierPage.dart';
 import 'package:emotion_app/Pages/acceuil.dart';
 import 'package:emotion_app/Pages/ajouterHumeurQuestionnaire.dart';
 import 'package:emotion_app/Pages/chat_page.dart';
@@ -67,13 +67,13 @@ class Navigationbarboutton extends StatelessWidget {
                 icon: Icons.calendar_month,
                 texte: 'Calendrier',
                 isSelected: currentRoute == 'calendrier',
-                onTap: () => (){
+                onTap: () => {
                   Navigator.push(
                     context, 
                     MaterialPageRoute(
                       builder: (context) => CalendrierPage(),
                       )
-                    );
+                    )
                 },
               ),
 
@@ -94,10 +94,10 @@ class Navigationbarboutton extends StatelessWidget {
                 icon: Icons.add_circle,
                 texte: "Ajouter humeur",
                  isSelected: currentRoute == 'questionnaire',
-                onTap: () => Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => const ajouterHumeurQuestionnaire()),
-                ),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ajouterHumeurQuestionnaire()),
+                  ),
               ),
 
               MenuItem(

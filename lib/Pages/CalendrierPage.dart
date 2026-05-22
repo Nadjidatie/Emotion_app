@@ -1,3 +1,4 @@
+import 'package:emotion_app/Pages/ajouterHumeurQuestionnaire.dart';
 import 'package:emotion_app/model/cycle_phase.dart';
 import 'package:emotion_app/model/journalQuotidien.dart';
 import 'package:emotion_app/services/cycleService.dart';
@@ -5,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 
-import 'questionnairePage.dart';
 
 
 
@@ -161,7 +161,7 @@ class _CalendrierPageState extends State<CalendrierPage> {
                     context,
                     MaterialPageRoute(
                       builder: (_) =>
-                          QuestionnairePage(date: _jourSelectionne),
+                          ajouterHumeurQuestionnaire(date: _jourSelectionne),
                     ),
                   );
                   setState(() {}); // refresh fiche
