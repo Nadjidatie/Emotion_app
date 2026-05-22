@@ -1,8 +1,7 @@
+import 'package:emotion_app/Pages/calendrierPage.dart';
 import 'package:emotion_app/Pages/ajouterHumeurQuestionnaire.dart';
-import 'package:emotion_app/Pages/calendarPage.dart';
-import 'package:emotion_app/Pages/questionnairePage.dart';
 import 'package:emotion_app/auth/auth_service.dart';
-import 'package:emotion_app/widgets/currentPhaseCard.dart';
+import 'package:emotion_app/widgets/phaseActuelle.dart';
 import 'package:emotion_app/widgets/logoutBoutton.dart';
 import 'package:emotion_app/widgets/navigationBarBoutton.dart';
 import 'package:flutter/material.dart';
@@ -103,7 +102,7 @@ class _AcceuilState extends State<Acceuil> {
                     const SizedBox(height: 8),
 
                     // === Carte phase courante ===
-                    CurrentPhaseCard(
+                    PhaseActuelle(
                       onTapQuestionnaire: () async {
                         await Navigator.push(
                           context,
@@ -123,7 +122,7 @@ class _AcceuilState extends State<Acceuil> {
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const CalendarPage(),
+                            builder: (_) => CalendrierPage(),
                           ),
                         ),
                         child: Container(
