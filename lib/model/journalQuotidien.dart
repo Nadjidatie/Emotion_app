@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:emotion_app/model/humeurOption.dart';
 
 
 ///     score = (humeur × 0.4) + (sommeil × 0.3) − (stress × 0.3)
@@ -7,9 +8,13 @@ import 'package:flutter/material.dart';
 class JournalQuotidien {
   final DateTime date;
 
+  /// Liste des humeurs sélectionnées (clés du [HumeurCatalogue]).
+  /// Ex: ['heureuse', 'energique'] ou ['stressee', 'fatiguee'].
+  /// Remplace l'ancien champ numérique `humeur`.
+  final List<String> humeurs;
+
   /// Échelle 1-10
-  final double humeur;
-  final double sommeil; 
+  final double sommeil;
   final double stress;
   final double energie;
   final double libido;
@@ -32,7 +37,7 @@ class JournalQuotidien {
 
   const JournalQuotidien({
     required this.date,
-    required this.humeur,
+    required this.humeurs,
     required this.sommeil,
     required this.stress,
     required this.energie,
@@ -43,6 +48,10 @@ class JournalQuotidien {
     required this.symptomes,
     this.note,
   });
+
+  /// Valeur numérique dérivée (moyenne pondérée des humeurs sélectionnées).
+  /// Utilisée par la formule du score quotidien.
+  double get humeur => HumeurCatalogue.valeurMoyenne(humeurs);
 
   double get scoreQuotidien {
     final score = (humeur * 0.4) + (sommeil * 0.3) - (stress * 0.3);
@@ -72,6 +81,9 @@ class JournalQuotidien {
 
   Map<String, dynamic> toJson() => {
         'date': date.toIso8601String().substring(0, 10),
+        'humeurs': humeurs,
+        // On garde aussi la valeur numérique dérivée pour la rétro-compat
+        // (anciennes lignes Supabase, requêtes analytiques, etc.).
         'humeur': humeur,
         'sommeil': sommeil,
         'stress': stress,
@@ -87,7 +99,11 @@ class JournalQuotidien {
 
   factory JournalQuotidien.fromJson(Map<String, dynamic> json) => JournalQuotidien(
         date: DateTime.parse(json['date'] as String),
-        humeur: (json['humeur'] as num).toDouble(),
+        // Support des anciennes lignes (sans `humeurs`) : on retombe sur une
+        // liste vide → la moyenne renverra 5.0 (humeur neutre).
+        humeurs: json['humeurs'] == null
+            ? <String>[]
+            : List<String>.from(json['humeurs'] as List),
         sommeil: (json['sommeil'] as num).toDouble(),
         stress: (json['stress'] as num).toDouble(),
         energie: (json['energie'] as num).toDouble(),

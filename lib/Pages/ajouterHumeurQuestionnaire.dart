@@ -2,7 +2,7 @@ import 'package:emotion_app/model/cycle_phase.dart';
 import 'package:emotion_app/model/journalQuotidien.dart';
 import 'package:emotion_app/services/cycleService.dart';
 import 'package:emotion_app/widgets/choixEtiquettes.dart';
-import 'package:emotion_app/widgets/menstruationToogle.dart';
+import 'package:emotion_app/widgets/selecteurHumeurs.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -25,13 +25,14 @@ class _ajouterHumeurQuestionnaireState extends State<ajouterHumeurQuestionnaire>
   late final DateTime _date;
 
   // Valeurs initiales (préchargées depuis un log existant si disponible).
-  double _humeur = 5;
+  // L'humeur n'est plus un slider d'intensité mais une multi-sélection
+  // d'humeurs (clés du HumeurCatalogue).
+  List<String> _humeurs = [];
   double _sommeil = 5;
   double _stress = 5;
   double _energie = 5;
   double _libido = 5;
   double _heuresSommeil = 7;
-  bool _estMenstruation = false;
   String _activite = 'Aucun';
   List<String> _symptomes = [];
   final TextEditingController _noteController = TextEditingController();
@@ -45,6 +46,7 @@ class _ajouterHumeurQuestionnaireState extends State<ajouterHumeurQuestionnaire>
   ];
 
   static const _symptomesDisponibles = [
+    'Aucun',
     'Crampes',
     'Maux de tête',
     'Fatigue',
@@ -63,13 +65,12 @@ class _ajouterHumeurQuestionnaireState extends State<ajouterHumeurQuestionnaire>
     _date = widget.date ?? DateTime.now();
     final existant = CycleService.instance.logPour(_date);
     if (existant != null) {
-      _humeur = existant.humeur;
+      _humeurs = List.of(existant.humeurs);
       _sommeil = existant.sommeil;
       _stress = existant.stress;
       _energie = existant.energie;
       _libido = existant.libido;
       _heuresSommeil = existant.heuresSommeil;
-      _estMenstruation = existant.estMenstruation;
       _activite = existant.activite;
       _symptomes = List.of(existant.symptomes);
       _noteController.text = existant.note ?? '';
@@ -85,13 +86,15 @@ class _ajouterHumeurQuestionnaireState extends State<ajouterHumeurQuestionnaire>
   Future<void> _sauvegarder() async {
     final log = JournalQuotidien(
       date: _date,
-      humeur: _humeur,
+      humeurs: _humeurs,
       sommeil: _sommeil,
       stress: _stress,
       energie: _energie,
       libido: _libido,
       heuresSommeil: _heuresSommeil,
-      estMenstruation: _estMenstruation,
+      // Le champ "règles" n'est plus saisi ici (déplacé sur l'accueil) :
+      // on le dérive du service pour rester cohérent.
+      estMenstruation: CycleService.instance.estJourDeRegles(_date),
       activite: _activite,
       symptomes: _symptomes,
       note: _noteController.text.trim().isEmpty
@@ -184,15 +187,15 @@ class _ajouterHumeurQuestionnaireState extends State<ajouterHumeurQuestionnaire>
                     ),
                     const SizedBox(height: 12),
 
-                    // Humeur
+                    // Humeur — multi-sélection d'humeurs avec icônes.
+                    // Remplace l'ancien slider d'intensité.
                     QuestionCard(
-                      titre: 'Comment est ton humeur aujourd\'hui ?',
-                      icone: Icons.sentiment_satisfied_alt,
-                      child: SliderQuestion(
-                        valeur: _humeur,
-                        labelMin: 'Très basse',
-                        labelMax: 'Très haute',
-                        onChanged: (v) => setState(() => _humeur = v),
+                      titre: 'Comment te sens-tu aujourd\'hui ?',
+                      sousTitre: 'Plusieurs choix possibles',
+                      icone: Icons.emoji_emotions,
+                      child: SelecteurHumeurs(
+                        selection: _humeurs,
+                        onChanged: (s) => setState(() => _humeurs = s),
                       ),
                     ),
 
@@ -277,7 +280,9 @@ class _ajouterHumeurQuestionnaireState extends State<ajouterHumeurQuestionnaire>
                       ),
                     ),
 
-                    // Symptômes (chips, multi-sélection)
+                    // Symptômes (chips, multi-sélection).
+                    // "Aucun" est exclusif : le sélectionner vide les autres,
+                    // et choisir un autre symptôme le retire automatiquement.
                     QuestionCard(
                       titre: 'Symptômes ressentis',
                       sousTitre: 'Plusieurs choix possibles',
@@ -286,19 +291,31 @@ class _ajouterHumeurQuestionnaireState extends State<ajouterHumeurQuestionnaire>
                         options: _symptomesDisponibles,
                         selection: _symptomes,
                         multiSelection: true,
-                        onChanged: (s) => setState(() => _symptomes = s),
+                        onChanged: (s) {
+                          setState(() {
+                            final viensAjouterAucun =
+                                s.contains('Aucun') &&
+                                    !_symptomes.contains('Aucun');
+                            if (viensAjouterAucun) {
+                              // L'utilisatrice vient de cocher "Aucun" :
+                              // on garde uniquement "Aucun".
+                              _symptomes = ['Aucun'];
+                            } else if (s.length > 1 && s.contains('Aucun')) {
+                              // "Aucun" était déjà coché et un autre symptôme
+                              // vient d'être ajouté → on retire "Aucun".
+                              _symptomes =
+                                  s.where((x) => x != 'Aucun').toList();
+                            } else {
+                              _symptomes = s;
+                            }
+                          });
+                        },
                       ),
                     ),
 
-                    // Règles ?
-                    QuestionCard(
-                      titre: 'Règles aujourd\'hui ?',
-                      icone: Icons.water_drop,
-                      child: MenstruationToggle(
-                        valeur: _estMenstruation,
-                        onChanged: (v) => setState(() => _estMenstruation = v),
-                      ),
-                    ),
+                    // (La question "Règles aujourd'hui ?" a été retirée :
+                    //  les jours de règles se marquent désormais directement
+                    //  depuis la bande rapide de la page d'accueil.)
 
                     // Note libre
                     QuestionCard(
