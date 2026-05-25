@@ -15,6 +15,14 @@ class CycleService extends ChangeNotifier {
   int _dureeRegles = 5;
   final Map<String, JournalQuotidien> _logs = {};
 
+  /// Jours explicitement marqués comme "règles" par l'utilisatrice via la
+  /// barre rapide de l'accueil (style Flo).
+  /// Les clés sont au format 'YYYY-MM-DD' (voir [_cle]).
+  ///
+  /// Source de vérité prioritaire : si une date est dans ce set, elle est
+  /// considérée comme jour de règles, indépendamment du calcul de phase.
+  final Set<String> _joursReglesMarques = {};
+
   // === Getters ===
 
   DateTime get dernieresRegles => _dernieresRegles;
@@ -23,6 +31,10 @@ class CycleService extends ChangeNotifier {
 
   List<JournalQuotidien> get tousLesLogs =>
       _logs.values.toList()..sort((a, b) => a.date.compareTo(b.date));
+
+  /// Est-ce que [date] a été marquée à la main comme jour de règles ?
+  bool estJourReglesMarque(DateTime date) =>
+      _joursReglesMarques.contains(_cle(date));
 
   // === Initialisation depuis Supabase ========================================
 
@@ -164,8 +176,51 @@ class CycleService extends ChangeNotifier {
     return CyclePhase.luteale;
   }
 
+  /// Vrai si [date] est un jour de règles, soit parce qu'il a été marqué à
+  /// la main, soit parce qu'il tombe dans la phase menstruelle calculée.
   bool estJourDeRegles(DateTime date) =>
+      estJourReglesMarque(date) ||
       phasePour(date) == CyclePhase.menstruelle;
+
+  /// Marque (ou démarque) [date] comme jour de règles.
+  ///
+  /// Quand on marque un jour, on essaie aussi de recaler le début du
+  /// dernier cycle ([_dernieresRegles]) sur le premier jour contigu marqué,
+  /// pour que la prédiction des phases suive ce que l'utilisatrice a saisi.
+  Future<void> marquerJourRegles(DateTime date, bool marque) async {
+    final cle = _cle(date);
+    if (marque) {
+      _joursReglesMarques.add(cle);
+      _recalibrerDernieresRegles(date);
+    } else {
+      _joursReglesMarques.remove(cle);
+    }
+    notifyListeners();
+    // TODO (étape 4) : persister _joursReglesMarques dans Supabase.
+  }
+
+  /// Cherche le premier jour contigu marqué dans la fenêtre proche de [date]
+  /// (jusqu'à 10 jours en arrière) et place [_dernieresRegles] dessus si
+  /// c'est plus pertinent que la valeur actuelle.
+  void _recalibrerDernieresRegles(DateTime date) {
+    DateTime premierJourBloc = _dateOnly(date);
+    for (int i = 1; i <= 10; i++) {
+      final candidat = premierJourBloc.subtract(const Duration(days: 1));
+      if (_joursReglesMarques.contains(_cle(candidat))) {
+        premierJourBloc = candidat;
+      } else {
+        break;
+      }
+    }
+    // On ne déplace _dernieresRegles que si le bloc nouvellement saisi est
+    // plus récent que la dernière valeur connue (évite de remonter dans le
+    // temps à cause d'une saisie sur un ancien mois).
+    final actuel = _dateOnly(_dernieresRegles);
+    if (premierJourBloc.isAfter(actuel) ||
+        premierJourBloc.difference(actuel).inDays.abs() <= 3) {
+      _dernieresRegles = premierJourBloc;
+    }
+  }
 
   DateTime prochainesRegles() {
     final aujourdhui = _dateOnly(DateTime.now());
