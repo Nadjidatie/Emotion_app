@@ -1,4 +1,4 @@
-# Cycle Harmony 🌸
+# Mood Tracker 🌸
 
 Application mobile Flutter de suivi du cycle menstruel et des émotions, avec backend Supabase.
 
@@ -165,11 +165,3 @@ lib/
 
 ---
 
-## Installation
-
-```bash
-flutter pub get
-flutter run
-```
-
-Requiert Flutter ≥ 3.0.0 et un projet Supabase configuré avec les tables ci-dessus.
