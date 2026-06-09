@@ -1,10 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:emotion_app/model/cycle_phase.dart';
 import 'package:emotion_app/services/cycleService.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
-import '../models/cycle_phase.dart';
 
 
 class PhaseActuelle  extends StatefulWidget {
