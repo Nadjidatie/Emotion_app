@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:emotion_app/model/humeurOption.dart';
 
 
-///     score = (humeur × 0.4) + (sommeil × 0.3) − (stress × 0.3)
+///     scoreBrut = (humeur × 0.4) + (sommeil × 0.3) − (stress × 0.3)
+///     scoreFinal = normalisation du score brut sur une échelle 0-10
 
 
 class JournalQuotidien {
@@ -54,10 +55,15 @@ class JournalQuotidien {
   double get humeur => HumeurCatalogue.valeurMoyenne(humeurs);
 
   double get scoreQuotidien {
-    final score = (humeur * 0.4) + (sommeil * 0.3) - (stress * 0.3);
-    // Stress soustrait peut donner un score négatif → on rebascule.
-    final ajuste = score + 3.0; // décalage pour rester majoritairement positif
-    return ajuste.clamp(0.0, 10.0);
+    final scoreBrut = (humeur * 0.4) + (sommeil * 0.3) - (stress * 0.3);
+
+    // Bornes théoriques du score brut avec les curseurs actuels :
+    // humeur 2..9, sommeil 1..10, stress 1..10.
+    const minBrut = -1.9;
+    const maxBrut = 6.3;
+    final scoreNormalise = ((scoreBrut - minBrut) / (maxBrut - minBrut)) * 10;
+
+    return scoreNormalise.clamp(0.0, 10.0);
   }
 
   Color get couleurDuJour {

@@ -102,7 +102,7 @@ class _InscriptionState extends State<Inscription> {
                   
                    
 
-                SizedBox(height: 20,),
+                SizedBox(height: 30,),
                 // le sizedbox pour que ça prenne toute la largeur du tel
                 //  SizedBox(
                 //   width: double.infinity,
@@ -118,24 +118,28 @@ class _InscriptionState extends State<Inscription> {
     
                  SizedBox(height: 20),
 
-                Row(
-                  children: [
-                    Expanded(child: Divider(thickness : 0.5)), // qui permet de metttre un tiret
-                    Padding( padding : EdgeInsets.symmetric(horizontal: 10), child : Text("ou continuer avec")),
-                    Expanded(child: Divider(thickness : 0.5)),
-                  ],
-                ),
+                 //pareil a revoir pour qu'on puisse se connecter direct avec un compte gooogle 
 
-                  SizedBox(height: 20,),
+                // Row(
+                //   children: [
+                //     Expanded(child: Divider(thickness : 0.5)), // qui permet de metttre un tiret
+                //     Padding( padding : EdgeInsets.symmetric(horizontal: 10), child : Text("ou continuer avec")),
+                //     Expanded(child: Divider(thickness : 0.5)),
+                //   ],
+                // ),
 
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Square(path : "assets/images/googleLogo.png", wight: 30,),
-                    SizedBox(width: 20,),
-                    Square(path : "assets/images/appleLogo.webp", wight: 50,),
-                ],
-                ),
+                //   SizedBox(height: 20,),
+
+                // Row(
+                //   mainAxisAlignment: MainAxisAlignment.center,
+                //   children: [
+                //     Square(path : "assets/images/googleLogo.png", wight: 30,),
+                //     SizedBox(width: 20,),
+                //     Square(path : "assets/images/appleLogo.webp", wight: 50,),
+                // ],
+                // ),
+
+              
                   SizedBox(height: 10,),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,

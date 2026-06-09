@@ -59,9 +59,12 @@ class _ProfilPageState extends State<ProfilPage> {
     setState(() => _isLoading = false);
   }
 
-  Future<void> _logout() async {
-    await _authService.signOut();
+Future<void> _logout() async {
+  await _authService.signOut();
+  if (mounted) {
+    Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
   }
+}
 
   @override
   Widget build(BuildContext context) {

@@ -89,7 +89,7 @@ class _ConnexionState extends State<Connexion> {
                        obscureText: true
                     ),
 
-                    SizedBox(height: 28,),
+                    SizedBox(height: 30,),
                     // le sizedbox pour que ça prenne toute la largeur du tel
                     //  SizedBox(
                     //   width: double.infinity,
@@ -106,28 +106,33 @@ class _ConnexionState extends State<Connexion> {
                         ),
                     SizedBox(height: 20),
 
-                    Row(
-                      children: [
-                        Expanded(child: Divider(thickness : 0.5)), // qui permet de metttre un tiret
-                        Padding( padding : EdgeInsets.symmetric(horizontal: 10), child : Text("ou continuer avec")),
-                        Expanded(child: Divider(thickness : 0.5)),
-                      ],
-                    ),
 
-                      SizedBox(height: 20,),
+                    // sa ne marrche pas encore mais a revoir
 
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Square(
-                          path : "assets/images/googleLogo.png",
-                          wight: 30,
-                          onTap: signInWithGoogle,
-                          ),
-                        SizedBox(width: 20,),
-                        Square(path : "assets/images/appleLogo.webp", wight: 50,),
-                    ],
-                    ),
+                    // Row(
+                    //   children: [
+                    //     Expanded(child: Divider(thickness : 0.5)), // qui permet de metttre un tiret
+                    //     Padding( padding : EdgeInsets.symmetric(horizontal: 10), child : Text("ou continuer avec")),
+                    //     Expanded(child: Divider(thickness : 0.5)),
+                    //   ],
+                    // ),
+
+                    //   SizedBox(height: 20,),
+
+                    // Row(
+                    //   mainAxisAlignment: MainAxisAlignment.center,
+                    //   children: [
+                    //     Square(
+                    //       path : "assets/images/googleLogo.png",
+                    //       wight: 30,
+                    //       onTap: signInWithGoogle,
+                    //       ),
+                    //     SizedBox(width: 20,),
+                    //     Square(path : "assets/images/appleLogo.webp", wight: 50,),
+                    // ],
+                    // ),
+
+
                       SizedBox(height: 10,),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
