@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Carte standard utilisée sur la page Statistiques.
-///
-/// Visuellement alignée avec [QuestionCard] mais plus haute par défaut,
-/// pour accueillir les graphiques fl_chart.
 class StatCard extends StatelessWidget {
   final String titre;
   final String? sousTitre;

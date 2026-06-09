@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Slider 1-10 réutilisable pour les questions du questionnaire.
-///
-/// Utilisé pour : humeur, sommeil (qualité), stress, énergie,
-/// heures de sommeil. Une seule définition → six usages.
 class SliderQuestion extends StatelessWidget {
   final double valeur;
   final double min;

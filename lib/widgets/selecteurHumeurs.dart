@@ -1,15 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:emotion_app/model/humeurOption.dart';
 
-/// Grille d'icônes d'humeurs sélectionnables (multi-sélection).
-///
-/// Remplace l'ancien slider d'intensité de l'humeur : au lieu d'une note
-/// 1-10, l'utilisatrice choisit une ou plusieurs humeurs représentées par
-/// une icône colorée (Heureuse, Calme, Stressée, Triste, …).
-///
-/// La valeur numérique utilisée par le `scoreQuotidien` est recalculée
-/// automatiquement côté modèle [JournalQuotidien.humeur] à partir des
-/// poids définis dans [HumeurCatalogue].
 class SelecteurHumeurs extends StatelessWidget {
   final List<String> selection;
   final ValueChanged<List<String>> onChanged;

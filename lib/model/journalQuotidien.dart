@@ -1,30 +1,17 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:emotion_app/model/humeurOption.dart';
 
-/// scoreBrut = (humeurMoyenne × 0.4) + (sommeil × 0.3) − (stress × 0.3)
-/// scoreFinal = normalisation du score brut sur une échelle 0-10
-
 class JournalQuotidien {
   final DateTime date;
-
-  /// Clés des humeurs sélectionnées. Ex: ["heureuse", "anxieuse"]
   final List<String> humeurs;
-
-  /// Qualité du sommeil 1-10
   final double sommeil;
   final double stress;
   final double energie;
-
-  /// Heures de sommeil (0-12)
+  final double libido;
   final double heuresSommeil;
-
-  /// L'utilisatrice a-t-elle ses règles aujourd'hui ?
   final bool estMenstruation;
-
-  /// Activité physique pratiquée (libellé court).
   final String activite;
-
-  /// Ex: ["Crampes", "Maux de tête", "Acné"]
   final List<String> symptomes;
 
   final String? note;
@@ -35,7 +22,7 @@ class JournalQuotidien {
     required this.sommeil,
     required this.stress,
     required this.energie,
-
+    required this.libido,
     required this.heuresSommeil,
     required this.estMenstruation,
     required this.activite,
@@ -44,12 +31,9 @@ class JournalQuotidien {
   });
 
   double get scoreQuotidien {
-    // On délègue le calcul de la valeur numérique au catalogue.
     final humeurVal = HumeurCatalogue.valeurMoyenne(humeurs);
     final scoreBrut = (humeurVal * 0.4) + (sommeil * 0.3) - (stress * 0.3);
 
-    // Bornes théoriques du score brut avec les curseurs actuels :
-    // humeur 2..9, sommeil 1..10, stress 1..10.
     const minBrut = -1.9;
     const maxBrut = 6.3;
     final scoreNormalise = ((scoreBrut - minBrut) / (maxBrut - minBrut)) * 10;
@@ -77,14 +61,14 @@ class JournalQuotidien {
 
   Map<String, dynamic> toJson() => {
         'date': date.toIso8601String().substring(0, 10),
-        'humeurs': humeurs,
+        'humeur': HumeurCatalogue.valeurMoyenne(humeurs),
         'sommeil': sommeil,
         'stress': stress,
         'energie': energie,
         'heures_sommeil': heuresSommeil,
         'est_menstruation': estMenstruation,
         'activite': activite,
-        'symptomes': symptomes,
+        'symptomes': jsonEncode(symptomes),
         'note': note,
         'score': scoreQuotidien,
       };
@@ -92,16 +76,19 @@ class JournalQuotidien {
   factory JournalQuotidien.fromJson(Map<String, dynamic> json) =>
       JournalQuotidien(
         date: DateTime.parse(json['date'] as String),
-        humeurs: json['humeurs'] != null
-            ? List<String>.from(json['humeurs'] as List)
-            : [],
+        humeurs: const [],
         sommeil: (json['sommeil'] as num).toDouble(),
         stress: (json['stress'] as num).toDouble(),
         energie: (json['energie'] as num).toDouble(),
+        libido: 5.0,
         heuresSommeil: (json['heures_sommeil'] as num).toDouble(),
         estMenstruation: json['est_menstruation'] as bool,
         activite: json['activite'] as String,
-        symptomes: List<String>.from(json['symptomes'] as List),
+        symptomes: json['symptomes'] == null || json['symptomes'] == '{}'
+            ? <String>[]
+            : json['symptomes'] is String
+                ? List<String>.from(jsonDecode(json['symptomes'] as String) as List)
+                : List<String>.from(json['symptomes'] as List),
         note: json['note'] as String?,
       );
 }

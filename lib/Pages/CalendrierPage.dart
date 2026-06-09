@@ -10,7 +10,6 @@ import 'package:table_calendar/table_calendar.dart';
 
 
 
-/// Tap → fiche détaillée du jour avec score et symptômes.
 class CalendrierPage extends StatefulWidget {
   const CalendrierPage({super.key});
 
@@ -72,8 +71,7 @@ class _CalendrierPageState extends State<CalendrierPage> {
             children: [
               const SizedBox(height: 8),
 
-              // === LE CALENDRIER ===
-              Container(
+                Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
@@ -101,7 +99,6 @@ class _CalendrierPageState extends State<CalendrierPage> {
                   },
                   onFormatChanged: (f) => setState(() => _format = f),
                   onPageChanged: (f) => _moisCourant = f,
-                  // Plus de place verticale pour des gros cercles colorés.
                   rowHeight: 56,
                   daysOfWeekHeight: 24,
                   headerStyle: HeaderStyle(
@@ -135,7 +132,6 @@ class _CalendrierPageState extends State<CalendrierPage> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  // === Cellules colorées ===
                   calendarBuilders: CalendarBuilders(
                     defaultBuilder: (context, day, _) =>
                         _construireCellule(day, cycle, selectionne: false),
@@ -150,12 +146,10 @@ class _CalendrierPageState extends State<CalendrierPage> {
 
               const SizedBox(height: 16),
 
-              // === LÉGENDE COULEURS ===
               _Legende(),
 
               const SizedBox(height: 16),
 
-              // === FICHE DU JOUR SÉLECTIONNÉ ===
               _FicheJour(
                 date: _jourSelectionne,
                 phaseInfo: phaseInfo,
@@ -180,25 +174,18 @@ class _CalendrierPageState extends State<CalendrierPage> {
     );
   }
 
-  /// Construit une cellule colorée pour [day].
-  ///
-  /// Le cercle remplit (presque) toute la cellule pour que la couleur
-  /// du jour soit bien visible — la date est centrée à l'intérieur.
-  Widget _construireCellule(
+    Widget _construireCellule(
     DateTime day,
     CycleService cycle, {
     required bool selectionne,
     bool aujourdhui = false,
   }) {
     final log = cycle.logPour(day);
-    // Source unique : le service combine jours marqués depuis l'accueil
-    // et phase calculée.
     final estRegles = cycle.estJourDeRegles(day);
 
     final couleurFond = log?.couleurDuJour ?? const Color(0xFFF7F3FB);
 
     return Container(
-      // Marge réduite à 2 → cercle bien plus gros qu'avant (était 4).
       margin: const EdgeInsets.all(2),
       decoration: BoxDecoration(
         color: couleurFond,
@@ -224,7 +211,6 @@ class _CalendrierPageState extends State<CalendrierPage> {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Chiffre du jour bien centré et plus gros.
           Text(
             '${day.day}',
             style: TextStyle(
@@ -235,8 +221,6 @@ class _CalendrierPageState extends State<CalendrierPage> {
               fontSize: 16,
             ),
           ),
-          // Pastille "règles" en haut à droite pour ne pas chevaucher
-          // le chiffre maintenant que le cercle est plus rempli.
           if (estRegles)
             Positioned(
               top: 4,
@@ -256,7 +240,6 @@ class _CalendrierPageState extends State<CalendrierPage> {
   }
 }
 
-/// Légende des couleurs (réutilisable au cas où on l'affiche ailleurs).
 class _Legende extends StatelessWidget {
   static const _entrees = [
     (Color(0xFFB79CED), 'Excellente'),
@@ -339,7 +322,6 @@ class _Legende extends StatelessWidget {
   }
 }
 
-/// Carte récap pour le jour sélectionné dans le calendrier.
 class _FicheJour extends StatelessWidget {
   final DateTime date;
   final CyclePhaseInfo phaseInfo;
@@ -450,9 +432,6 @@ class _FicheJour extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        // Humeurs sélectionnées (chips colorées avec icône).
-        // Remplace l'ancienne ligne numérique "Humeur : X/10" — la valeur
-        // numérique reste dispo dans log.humeur (dérivée) pour le score.
         if (log.humeurs.isNotEmpty) ...[
           const Padding(
             padding: EdgeInsets.only(bottom: 6),

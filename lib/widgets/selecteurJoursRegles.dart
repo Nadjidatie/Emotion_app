@@ -2,12 +2,8 @@ import 'package:emotion_app/services/cycleService.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-
 class SelecteurJoursRegles extends StatefulWidget {
-  /// Nombre de jours passés affichés (par défaut 7).
   final int joursPasses;
-
-  /// Nombre de jours futurs affichés (par défaut 3).
   final int joursFuturs;
 
   const SelecteurJoursRegles({
@@ -150,8 +146,6 @@ class _ChipJour extends StatelessWidget {
   Widget build(BuildContext context) {
     final cycle = CycleService.instance;
     final marque = cycle.estJourReglesMarque(date);
-    // Couleur tâche/prédite (sans tap) — un point pâle pour signaler les
-    // jours prédits par le cycle.
     final estReglesPredit =
         !marque && cycle.estJourDeRegles(date);
     final estFutur = date.isAfter(DateTime.now());
@@ -164,7 +158,7 @@ class _ChipJour extends StatelessWidget {
 
     return GestureDetector(
       onTap: estFutur && !marque
-          ? null // pas de marquage futur (sauf si on veut un démarcage rapide)
+          ? null
           : () => cycle.marquerJourRegles(date, !marque),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),

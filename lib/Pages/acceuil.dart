@@ -4,6 +4,8 @@ import 'package:emotion_app/Pages/profilPage.dart';
 import 'package:emotion_app/widgets/navigationBarBoutton.dart';
 import 'package:emotion_app/widgets/phaseActuelle.dart';
 import 'package:emotion_app/widgets/profilPhotoDefaut.dart';
+import 'package:emotion_app/services/cycleService.dart';
+import 'package:emotion_app/widgets/selecteurJoursRegles.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -17,6 +19,12 @@ class Acceuil extends StatefulWidget {
 }
 
 class _AcceuilState extends State<Acceuil> {
+  @override
+  void initState() {
+    super.initState();
+    CycleService.instance.initialiserDepuisSupabase();
+  }
+
   @override
   Widget build(BuildContext context) {
     final supabase = Supabase.instance.client;
@@ -141,6 +149,8 @@ class _AcceuilState extends State<Acceuil> {
                         setState(() {});
                       },
                     ),
+                    const SizedBox(height: 16),
+                    const SelecteurJoursRegles(),
                     const SizedBox(height: 16),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),

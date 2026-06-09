@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Tuile compacte utilisée dans la grille 2×2 "Stats rapides".
-///
-/// Affiche un grand chiffre (valeur), un libellé court en dessous et une
-/// icône colorée dans le coin supérieur droit.
 class MiniStatTuile extends StatelessWidget {
   final String valeur;
   final String libelle;

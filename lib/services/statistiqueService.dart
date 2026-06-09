@@ -108,7 +108,7 @@ class StatistiquesService {
     final compte = <String, int>{};
     int totalSelections = 0;
     for (final l in logs) {
-      for (final String h in l.humeurs) { // ← corrigé : humeurs
+      for (final String h in l.humeurs) {
         compte[h] = (compte[h] ?? 0) + 1;
         totalSelections++;
       }

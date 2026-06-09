@@ -2,7 +2,6 @@ import 'package:emotion_app/services/statistiqueService.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
-/// Donut + légende de la répartition des humeurs sur la période.
 class GrapheRepartitionHumeurs extends StatelessWidget {
   final List<TrancheHumeur> tranches;
 

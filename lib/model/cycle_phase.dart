@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Les 4 phases du cycle menstruel.
-
-
 enum CyclePhase {
   menstruelle,
   folliculaire,
@@ -43,7 +40,7 @@ class CyclePhaseInfo {
               'Œstrogènes et progestérone au plus bas. Les prostaglandines peuvent provoquer des crampes.',
           conseil:
               'Privilégie le repos, des aliments riches en fer (lentilles, épinards) et des étirements doux.',
-          couleur: Color(0xFFE8A0A0), // rose terracotta doux
+          couleur: Color(0xFFE8A0A0),
           icone: Icons.water_drop,
         );
       case CyclePhase.folliculaire:
@@ -56,7 +53,7 @@ class CyclePhaseInfo {
               'Les œstrogènes augmentent progressivement, stimulant la motivation et la concentration.',
           conseil:
               'Profite de ton énergie : sport intense, créativité, nouveaux défis. Mise sur les protéines.',
-          couleur: Color(0xFFB7D4A8), // vert tendre
+          couleur: Color(0xFFB7D4A8),
           icone: Icons.eco,
         );
       case CyclePhase.ovulatoire:
@@ -69,7 +66,7 @@ class CyclePhaseInfo {
               'Le pic d\'œstrogènes déclenche l\'ovulation. La testostérone augmente aussi, boostant la  et la compétitivité.',
           conseil:
               'C\'est le moment des présentations, rendez-vous importants et entraînements intenses.',
-          couleur: Color(0xFFF5C97E), // jaune doré
+          couleur: Color(0xFFF5C97E),
           icone: Icons.wb_sunny,
         );
       case CyclePhase.luteale:
@@ -82,7 +79,7 @@ class CyclePhaseInfo {
               'La progestérone domine, puis chute en fin de phase (SPM possible : irritabilité, ballonnements).',
           conseil:
               'Ralentis le rythme. Yoga, marche, magnésium, chocolat noir et sommeil de qualité.',
-          couleur: Color(0xFFB79CED), // sirène (couleur d'accent de l'app)
+          couleur: Color(0xFFB79CED),
           icone: Icons.nightlight_round,
         );
     }
