@@ -38,6 +38,7 @@ class ProfileService {
     } catch (e, st) {
       print('EXCEPTION: $e');
       print('STACK: $st');
+      rethrow;
     }
   }
 
@@ -79,13 +80,18 @@ class ProfileService {
 
       final data = await supabase
           .from('profiles')
-          .select()
+          .select('nom, prenom, genre, date_naissance, objective, image_url, created_at')
           .eq('id', userId)
           .maybeSingle();
 
       if (data == null) return null;
 
-      final dateInscription = DateTime.tryParse(user.createdAt) ?? DateTime.now();
+      final profileCreatedAt = data['created_at']?.toString();
+      final dateInscription =
+          DateTime.tryParse(profileCreatedAt ?? '') ??
+          DateTime.tryParse(user.createdAt) ??
+          DateTime.now();
+      final joursMembre = DateTime.now().difference(dateInscription).inDays;
 
       return {
         'nom': data['nom'] ?? '',
@@ -94,7 +100,7 @@ class ProfileService {
         'date_naissance': data['date_naissance'],
         'objective': data['objective'] ?? '',
         'image_url': data['image_url'],
-        'jours_membre': DateTime.now().difference(dateInscription).inDays,
+        'jours_membre': joursMembre < 0 ? 0 : joursMembre,
       };
     } catch (e) {
       print('ERREUR getProfil: $e');

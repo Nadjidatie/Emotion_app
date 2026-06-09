@@ -1,11 +1,13 @@
 import 'package:emotion_app/Pages/editPage.dart';
+import 'package:emotion_app/auth/auth_service.dart';
 import 'package:emotion_app/services/profile_service.dart';
 import 'package:emotion_app/widgets/profilPhotoDefaut.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ProfilPage extends StatefulWidget {
-  const ProfilPage({Key? key}) : super(key: key);
+  final String userId;
+  const ProfilPage({Key? key, required this.userId}) : super(key: key);
 
   @override
   State<ProfilPage> createState() => _ProfilPageState();
@@ -13,7 +15,7 @@ class ProfilPage extends StatefulWidget {
 
 class _ProfilPageState extends State<ProfilPage> {
   final _profileService = ProfileService();
-  final _supabase = Supabase.instance.client;
+  final _authService = AuthService();
 
   String _prenom = '';
   String _nom = '';
@@ -33,11 +35,7 @@ class _ProfilPageState extends State<ProfilPage> {
   }
 
   Future<void> _loadProfil() async {
-    final userId = _supabase.auth.currentUser?.id;
-    if (userId == null) {
-      setState(() => _isLoading = false);
-      return;
-    }
+    final userId = widget.userId;
 
     final data = await _profileService.getProfil(userId);
     if (data != null) {
@@ -48,13 +46,21 @@ class _ProfilPageState extends State<ProfilPage> {
         _joursMembre = data['jours_membre'] ?? 0;
 
         final genre = (data['genre'] ?? '').toString().toLowerCase();
-        if (genre == 'homme') _sexe = Sexe.homme;
-        else if (genre == 'femme') _sexe = Sexe.femme;
-        else _sexe = Sexe.autre;
+        if (genre == 'homme') {
+          _sexe = Sexe.homme;
+        } else if (genre == 'femme') {
+          _sexe = Sexe.femme;
+        } else {
+          _sexe = Sexe.autre;
+        }
       });
     }
 
     setState(() => _isLoading = false);
+  }
+
+  Future<void> _logout() async {
+    await _authService.signOut();
   }
 
   @override
@@ -77,7 +83,6 @@ class _ProfilPageState extends State<ProfilPage> {
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
               child: Column(
                 children: [
-                  // ── Avatar ────────────────────────────────────────────────
                   CircleAvatar(
                     radius: 52,
                     backgroundColor: primaryLight,
@@ -94,8 +99,6 @@ class _ProfilPageState extends State<ProfilPage> {
                         : null,
                   ),
                   const SizedBox(height: 16),
-
-                  // ── Nom complet ───────────────────────────────────────────
                   Text(
                     '$_prenom $_nom'.trim(),
                     style: const TextStyle(
@@ -105,8 +108,6 @@ class _ProfilPageState extends State<ProfilPage> {
                     ),
                   ),
                   const SizedBox(height: 6),
-
-                  // ── Jours membre ──────────────────────────────────────────
                   Text(
                     'Membre depuis $_joursMembre jour${_joursMembre > 1 ? 's' : ''}',
                     style: const TextStyle(
@@ -115,17 +116,14 @@ class _ProfilPageState extends State<ProfilPage> {
                     ),
                   ),
                   const SizedBox(height: 40),
-
-                  // ── Bouton modifier ───────────────────────────────────────
                   ElevatedButton(
                     onPressed: () async {
                       await Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const EditProfilePage(),
+                          builder: (_) => EditProfilePage(userId: widget.userId),
                         ),
                       );
-                      // Recharge le profil après modification
                       _loadProfil();
                     },
                     style: ElevatedButton.styleFrom(
@@ -137,9 +135,29 @@ class _ProfilPageState extends State<ProfilPage> {
                       ),
                       elevation: 0,
                       textStyle: const TextStyle(
-                          fontSize: 15, fontWeight: FontWeight.w500),
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                     child: const Text('Modifier mon profil'),
+                  ),
+                  const SizedBox(height: 12),
+                  ElevatedButton(
+                    onPressed: _logout,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFE45C5C),
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      elevation: 0,
+                      textStyle: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    child: const Text('Se déconnecter'),
                   ),
                 ],
               ),

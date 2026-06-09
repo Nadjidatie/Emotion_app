@@ -2,7 +2,7 @@ import 'package:emotion_app/model/cycle_phase.dart';
 import 'package:emotion_app/model/journalQuotidien.dart';
 import 'package:emotion_app/services/cycleService.dart';
 import 'package:emotion_app/widgets/choixEtiquettes.dart';
-import 'package:emotion_app/widgets/menstruationToogle.dart';
+import 'package:emotion_app/widgets/selecteurHumeurs.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -10,28 +10,24 @@ import '../widgets/questionCard.dart';
 import '../widgets/curseurEvaluation.dart';
 
 
-class ajouterHumeurQuestionnaire extends StatefulWidget {
-  /// Date pour laquelle on remplit le questionnaire.
-  /// Par défaut : aujourd'hui.
+class AjouterHumeurQuestionnaire extends StatefulWidget {
   final DateTime? date;
 
-  const ajouterHumeurQuestionnaire({super.key, this.date});
+  const AjouterHumeurQuestionnaire({super.key, this.date});
 
   @override
-  State<ajouterHumeurQuestionnaire> createState() => _ajouterHumeurQuestionnaireState();
+  State<AjouterHumeurQuestionnaire> createState() => _AjouterHumeurQuestionnaireState();
 }
 
-class _ajouterHumeurQuestionnaireState extends State<ajouterHumeurQuestionnaire> {
+class _AjouterHumeurQuestionnaireState extends State<AjouterHumeurQuestionnaire> {
   late final DateTime _date;
 
-  // Valeurs initiales (préchargées depuis un log existant si disponible).
-  double _humeur = 5;
+  List<String> _humeurs = [];
   double _sommeil = 5;
   double _stress = 5;
   double _energie = 5;
   double _libido = 5;
   double _heuresSommeil = 7;
-  bool _estMenstruation = false;
   String _activite = 'Aucun';
   List<String> _symptomes = [];
   final TextEditingController _noteController = TextEditingController();
@@ -45,6 +41,7 @@ class _ajouterHumeurQuestionnaireState extends State<ajouterHumeurQuestionnaire>
   ];
 
   static const _symptomesDisponibles = [
+    'Aucun',
     'Crampes',
     'Maux de tête',
     'Fatigue',
@@ -63,13 +60,12 @@ class _ajouterHumeurQuestionnaireState extends State<ajouterHumeurQuestionnaire>
     _date = widget.date ?? DateTime.now();
     final existant = CycleService.instance.logPour(_date);
     if (existant != null) {
-      _humeur = existant.humeur;
+      _humeurs = List.of(existant.humeurs);
       _sommeil = existant.sommeil;
       _stress = existant.stress;
       _energie = existant.energie;
       _libido = existant.libido;
       _heuresSommeil = existant.heuresSommeil;
-      _estMenstruation = existant.estMenstruation;
       _activite = existant.activite;
       _symptomes = List.of(existant.symptomes);
       _noteController.text = existant.note ?? '';
@@ -85,13 +81,13 @@ class _ajouterHumeurQuestionnaireState extends State<ajouterHumeurQuestionnaire>
   Future<void> _sauvegarder() async {
     final log = JournalQuotidien(
       date: _date,
-      humeur: _humeur,
+      humeurs: _humeurs,
       sommeil: _sommeil,
       stress: _stress,
       energie: _energie,
       libido: _libido,
       heuresSommeil: _heuresSommeil,
-      estMenstruation: _estMenstruation,
+      estMenstruation: CycleService.instance.estJourDeRegles(_date),
       activite: _activite,
       symptomes: _symptomes,
       note: _noteController.text.trim().isEmpty
@@ -119,8 +115,7 @@ class _ajouterHumeurQuestionnaireState extends State<ajouterHumeurQuestionnaire>
   Widget build(BuildContext context) {
     final phase = CycleService.instance.phasePour(_date);
     final phaseInfo = CyclePhaseInfo.of(phase);
-    final dateFormatee =
-        DateFormat('EEEE d MMMM', 'fr_FR').format(_date);
+    final dateFormatee = DateFormat('EEEE d MMMM', 'fr_FR').format(_date);
 
     return Scaffold(
       backgroundColor: const Color(0xFFFCF5FF),
@@ -184,19 +179,16 @@ class _ajouterHumeurQuestionnaireState extends State<ajouterHumeurQuestionnaire>
                     ),
                     const SizedBox(height: 12),
 
-                    // Humeur
                     QuestionCard(
-                      titre: 'Comment est ton humeur aujourd\'hui ?',
-                      icone: Icons.sentiment_satisfied_alt,
-                      child: SliderQuestion(
-                        valeur: _humeur,
-                        labelMin: 'Très basse',
-                        labelMax: 'Très haute',
-                        onChanged: (v) => setState(() => _humeur = v),
+                      titre: 'Comment te sens-tu aujourd\'hui ?',
+                      sousTitre: 'Plusieurs choix possibles',
+                      icone: Icons.emoji_emotions,
+                      child: SelecteurHumeurs(
+                        selection: _humeurs,
+                        onChanged: (s) => setState(() => _humeurs = s),
                       ),
                     ),
 
-                    // Sommeil — qualité
                     QuestionCard(
                       titre: 'Qualité du sommeil',
                       icone: Icons.bedtime,
@@ -208,7 +200,6 @@ class _ajouterHumeurQuestionnaireState extends State<ajouterHumeurQuestionnaire>
                       ),
                     ),
 
-                    // Sommeil — heures
                     QuestionCard(
                       titre: 'Heures de sommeil',
                       icone: Icons.access_time,
@@ -224,7 +215,6 @@ class _ajouterHumeurQuestionnaireState extends State<ajouterHumeurQuestionnaire>
                       ),
                     ),
 
-                    // Stress
                     QuestionCard(
                       titre: 'Niveau de stress',
                       icone: Icons.bolt,
@@ -237,7 +227,6 @@ class _ajouterHumeurQuestionnaireState extends State<ajouterHumeurQuestionnaire>
                       ),
                     ),
 
-                    // Énergie
                     QuestionCard(
                       titre: 'Niveau d\'énergie',
                       icone: Icons.local_fire_department,
@@ -250,7 +239,6 @@ class _ajouterHumeurQuestionnaireState extends State<ajouterHumeurQuestionnaire>
                       ),
                     ),
 
-                    // Libido
                     QuestionCard(
                       titre: 'Libido',
                       icone: Icons.favorite,
@@ -263,7 +251,6 @@ class _ajouterHumeurQuestionnaireState extends State<ajouterHumeurQuestionnaire>
                       ),
                     ),
 
-                    // Activité physique (chips, sélection unique)
                     QuestionCard(
                       titre: 'Activité physique',
                       sousTitre: 'Sélectionne ce que tu as pratiqué',
@@ -277,7 +264,6 @@ class _ajouterHumeurQuestionnaireState extends State<ajouterHumeurQuestionnaire>
                       ),
                     ),
 
-                    // Symptômes (chips, multi-sélection)
                     QuestionCard(
                       titre: 'Symptômes ressentis',
                       sousTitre: 'Plusieurs choix possibles',
@@ -286,21 +272,23 @@ class _ajouterHumeurQuestionnaireState extends State<ajouterHumeurQuestionnaire>
                         options: _symptomesDisponibles,
                         selection: _symptomes,
                         multiSelection: true,
-                        onChanged: (s) => setState(() => _symptomes = s),
+                        onChanged: (s) {
+                          setState(() {
+                            final viensAjouterAucun =
+                                s.contains('Aucun') &&
+                                    !_symptomes.contains('Aucun');
+                            if (viensAjouterAucun) {
+                              _symptomes = ['Aucun'];
+                            } else if (s.length > 1 && s.contains('Aucun')) {
+                              _symptomes = s.where((x) => x != 'Aucun').toList();
+                            } else {
+                              _symptomes = s;
+                            }
+                          });
+                        },
                       ),
                     ),
 
-                    // Règles ?
-                    QuestionCard(
-                      titre: 'Règles aujourd\'hui ?',
-                      icone: Icons.water_drop,
-                      child: MenstruationToggle(
-                        valeur: _estMenstruation,
-                        onChanged: (v) => setState(() => _estMenstruation = v),
-                      ),
-                    ),
-
-                    // Note libre
                     QuestionCard(
                       titre: 'Note personnelle',
                       sousTitre: 'Optionnel — quelque chose à noter ?',
@@ -311,21 +299,16 @@ class _ajouterHumeurQuestionnaireState extends State<ajouterHumeurQuestionnaire>
                         style: const TextStyle(color: Color(0xFF4C4A73)),
                         decoration: InputDecoration(
                           hintText: 'Ex : journée intense au travail...',
-                          hintStyle:
-                              const TextStyle(color: Color(0xFF8B87A3)),
+                          hintStyle: const TextStyle(color: Color(0xFF8B87A3)),
                           filled: true,
                           fillColor: const Color(0xFFFCF5FF),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: const Color(0xFFE8DDF5),
-                            ),
+                            borderSide: const BorderSide(color: Color(0xFFE8DDF5)),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Color(0xFFE8DDF5),
-                            ),
+                            borderSide: const BorderSide(color: Color(0xFFE8DDF5)),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),

@@ -1,5 +1,7 @@
 import 'package:emotion_app/services/chatbot_service.dart';
+import 'package:emotion_app/services/cycleService.dart';
 import 'package:emotion_app/services/profile_service.dart';
+import 'package:emotion_app/services/statistiqueService.dart';
 import 'package:flutter/material.dart';
 
 class ChatPage extends StatefulWidget {
@@ -46,6 +48,48 @@ class _ChatPageState extends State<ChatPage> {
 
   bool en_cours = false;
 
+  Map<String, dynamic> _buildStats() {
+    final cycle = CycleService.instance;
+    final logs = StatistiquesService.logsDeLaPeriode(
+      cycle.tousLesLogs,
+      PeriodeStats.semaine,
+    );
+    final repartition = StatistiquesService.repartitionHumeurs(logs);
+    final tendances = StatistiquesService.calculerTendances(
+      logs,
+      cycle.tousLesLogs,
+      cycle,
+    );
+
+    final symptomes = <String, int>{};
+    for (final log in logs) {
+      for (final symptome in log.symptomes) {
+        if (symptome == 'Aucun') continue;
+        symptomes[symptome] = (symptomes[symptome] ?? 0) + 1;
+      }
+    }
+
+    String? symptomeFrequent;
+    if (symptomes.isNotEmpty) {
+      final top =
+          symptomes.entries.reduce((a, b) => a.value >= b.value ? a : b);
+      symptomeFrequent = top.key;
+    }
+
+    return {
+      'periode': PeriodeStats.semaine.libelle.toLowerCase(),
+      'nbJoursRemplis': logs.length,
+      'scoreMoyen': StatistiquesService.scoreMoyen(logs),
+      'sommeilMoyen': StatistiquesService.sommeilMoyen(logs),
+      'totalSymptomes': StatistiquesService.totalSymptomes(logs),
+      'humeurDominante':
+          repartition.isNotEmpty ? repartition.first.libelle : null,
+      'symptomeFrequent': symptomeFrequent,
+      'phaseActuelle': cycle.phasePour(DateTime.now()).name,
+      'tendances': tendances.map((t) => t.texte).toList(),
+    };
+  }
+
   Future<void> sendMessage() async {
     final text = controller.text.trim();
     
@@ -62,8 +106,8 @@ class _ChatPageState extends State<ChatPage> {
     });
 
     try{
-      final reply = await chatbotService.sendMessage(text);
-
+      final stats = _buildStats();
+      final reply = await chatbotService.sendMessage(text, stats);
       setState(() {
         messages.add({
           'role' : 'bot',
@@ -74,11 +118,11 @@ class _ChatPageState extends State<ChatPage> {
 
     }
     catch(e){
-
+      final errorMessage = e.toString().replaceFirst('Exception: ', '');
       setState(() {
         messages.add({
           'role' : 'bot',
-          'text' : "Erreur : impossible de contacter le chatbot.",
+          'text' : "Erreur chatbot : $errorMessage",
         });
         
       });

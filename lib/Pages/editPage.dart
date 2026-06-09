@@ -3,10 +3,10 @@ import 'package:emotion_app/services/profile_service.dart';
 import 'package:emotion_app/widgets/profilPhotoDefaut.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class EditProfilePage extends StatefulWidget {
-  const EditProfilePage({Key? key}) : super(key: key);
+  final String userId;
+  const EditProfilePage({Key? key, required this.userId}) : super(key: key);
 
   @override
   State<EditProfilePage> createState() => _EditProfilePageState();
@@ -14,7 +14,6 @@ class EditProfilePage extends StatefulWidget {
 
 class _EditProfilePageState extends State<EditProfilePage> {
   final _profileService = ProfileService();
-  final _supabase = Supabase.instance.client;
   final _picker = ImagePicker();
 
   final _firstNameController = TextEditingController();
@@ -54,8 +53,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   }
 
   Future<void> _loadProfil() async {
-    final userId = _supabase.auth.currentUser?.id;
-    if (userId == null) { setState(() => _isLoading = false); return; }
+    final userId = widget.userId;
 
     final data = await _profileService.getProfil(userId);
     if (data != null) {
@@ -119,10 +117,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
   void _removeImage() => setState(() { _imageFile = null; _imageUrl = null; });
 
   Future<void> _save() async {
-    if (_selectedDate == null) {
-      setState(() => _errorMessage = 'Veuillez sélectionner une date de naissance.');
-      return;
-    }
     setState(() { _isSaving = true; _errorMessage = null; });
 
     try {
@@ -136,7 +130,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       await _profileService.saveProfil(
         nom: _lastNameController.text.trim(),
         prenom: _firstNameController.text.trim(),
-        datenaissance: _selectedDate!,
+        datenaissance: _selectedDate ?? DateTime(2000, 1, 1),
         genre: _selectedGender.toLowerCase(),
         objective: _goalController.text.trim(),
         imageUrl: finalImageUrl,
@@ -214,7 +208,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   ),
                   const SizedBox(height: 28),
 
-                  // Avatar cliquable
                   Center(
                     child: GestureDetector(
                       onTap: _pickImage,

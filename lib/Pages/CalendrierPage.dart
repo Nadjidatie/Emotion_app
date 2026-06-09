@@ -1,5 +1,6 @@
 import 'package:emotion_app/Pages/ajouterHumeurQuestionnaire.dart';
 import 'package:emotion_app/model/cycle_phase.dart';
+import 'package:emotion_app/model/humeurOption.dart';
 import 'package:emotion_app/model/journalQuotidien.dart';
 import 'package:emotion_app/services/cycleService.dart';
 import 'package:flutter/material.dart';
@@ -100,6 +101,9 @@ class _CalendrierPageState extends State<CalendrierPage> {
                   },
                   onFormatChanged: (f) => setState(() => _format = f),
                   onPageChanged: (f) => _moisCourant = f,
+                  // Plus de place verticale pour des gros cercles colorés.
+                  rowHeight: 56,
+                  daysOfWeekHeight: 24,
                   headerStyle: HeaderStyle(
                     titleTextStyle: const TextStyle(
                       color: Color(0xFF4C4A73),
@@ -161,7 +165,7 @@ class _CalendrierPageState extends State<CalendrierPage> {
                     context,
                     MaterialPageRoute(
                       builder: (_) =>
-                          ajouterHumeurQuestionnaire(date: _jourSelectionne),
+                          AjouterHumeurQuestionnaire(date: _jourSelectionne),
                     ),
                   );
                   setState(() {}); // refresh fiche
@@ -177,6 +181,9 @@ class _CalendrierPageState extends State<CalendrierPage> {
   }
 
   /// Construit une cellule colorée pour [day].
+  ///
+  /// Le cercle remplit (presque) toute la cellule pour que la couleur
+  /// du jour soit bien visible — la date est centrée à l'intérieur.
   Widget _construireCellule(
     DateTime day,
     CycleService cycle, {
@@ -184,14 +191,15 @@ class _CalendrierPageState extends State<CalendrierPage> {
     bool aujourdhui = false,
   }) {
     final log = cycle.logPour(day);
-    final phase = cycle.phasePour(day);
-    final estRegles =
-        log?.estMenstruation ?? (phase == CyclePhase.menstruelle);
+    // Source unique : le service combine jours marqués depuis l'accueil
+    // et phase calculée.
+    final estRegles = cycle.estJourDeRegles(day);
 
     final couleurFond = log?.couleurDuJour ?? const Color(0xFFF7F3FB);
 
     return Container(
-      margin: const EdgeInsets.all(4),
+      // Marge réduite à 2 → cercle bien plus gros qu'avant (était 4).
+      margin: const EdgeInsets.all(2),
       decoration: BoxDecoration(
         color: couleurFond,
         shape: BoxShape.circle,
@@ -203,26 +211,39 @@ class _CalendrierPageState extends State<CalendrierPage> {
                   : Colors.transparent,
           width: selectionne ? 2.5 : (aujourdhui ? 2 : 0),
         ),
+        boxShadow: log != null
+            ? [
+                BoxShadow(
+                  color: couleurFond.withOpacity(0.4),
+                  blurRadius: 4,
+                  offset: const Offset(0, 1),
+                ),
+              ]
+            : null,
       ),
       child: Stack(
         alignment: Alignment.center,
         children: [
+          // Chiffre du jour bien centré et plus gros.
           Text(
             '${day.day}',
             style: TextStyle(
               color: const Color(0xFF4C4A73),
               fontWeight: aujourdhui || selectionne
-                  ? FontWeight.bold
-                  : FontWeight.w500,
-              fontSize: 14,
+                  ? FontWeight.w800
+                  : FontWeight.w600,
+              fontSize: 16,
             ),
           ),
+          // Pastille "règles" en haut à droite pour ne pas chevaucher
+          // le chiffre maintenant que le cercle est plus rempli.
           if (estRegles)
             Positioned(
-              bottom: 4,
+              top: 4,
+              right: 4,
               child: Container(
-                width: 5,
-                height: 5,
+                width: 6,
+                height: 6,
                 decoration: const BoxDecoration(
                   color: Color(0xFFE8A0A0),
                   shape: BoxShape.circle,
@@ -429,7 +450,57 @@ class _FicheJour extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        _ligneStat('Humeur', log.humeur),
+        // Humeurs sélectionnées (chips colorées avec icône).
+        // Remplace l'ancienne ligne numérique "Humeur : X/10" — la valeur
+        // numérique reste dispo dans log.humeur (dérivée) pour le score.
+        if (log.humeurs.isNotEmpty) ...[
+          const Padding(
+            padding: EdgeInsets.only(bottom: 6),
+            child: Text(
+              'Humeurs',
+              style: TextStyle(
+                fontSize: 12,
+                color: Color(0xFF8B87A3),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: log.humeurs
+                .map((cle) => HumeurCatalogue.parCle(cle))
+                .whereType<HumeurOption>()
+                .map(
+                  (h) => Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: h.couleur.withOpacity(0.22),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: h.couleur),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(h.icone, color: h.couleur, size: 16),
+                        const SizedBox(width: 6),
+                        Text(
+                          h.libelle,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF4C4A73),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+                .toList(),
+          ),
+          const SizedBox(height: 12),
+        ],
         _ligneStat('Sommeil', log.sommeil,
             extra: '${log.heuresSommeil.toStringAsFixed(1)} h'),
         _ligneStat('Stress', log.stress),

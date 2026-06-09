@@ -1,14 +1,15 @@
-import 'package:emotion_app/Pages/calendrierPage.dart';
+import 'package:emotion_app/Pages/CalendrierPage.dart';
 import 'package:emotion_app/Pages/ajouterHumeurQuestionnaire.dart';
-import 'package:emotion_app/auth/auth_service.dart';
-import 'package:emotion_app/widgets/phaseActuelle.dart';
-import 'package:emotion_app/widgets/logoutBoutton.dart';
+import 'package:emotion_app/Pages/profilPage.dart';
 import 'package:emotion_app/widgets/navigationBarBoutton.dart';
+import 'package:emotion_app/widgets/phaseActuelle.dart';
+import 'package:emotion_app/widgets/profilPhotoDefaut.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class Acceuil extends StatefulWidget {
   final String userId;
+
   const Acceuil({super.key, required this.userId});
 
   @override
@@ -16,31 +17,22 @@ class Acceuil extends StatefulWidget {
 }
 
 class _AcceuilState extends State<Acceuil> {
-  final AuthService _authService = AuthService();
-
-  void logout() async {
-    await _authService.signOut();
-  }
-
   @override
   Widget build(BuildContext context) {
     final supabase = Supabase.instance.client;
+    final profileStream = supabase
+        .from('profiles')
+        .stream(primaryKey: ['id'])
+        .eq('id', widget.userId);
 
     return Scaffold(
       backgroundColor: const Color(0xFFFCF5FF),
       body: SafeArea(
-        child: FutureBuilder(
-          // timeout 3s pour ne pas bloquer l'UI si Supabase est en pause
-          future: supabase
-              .from('profiles')
-              .select('nom, prenom, genre')
-              .eq('id', widget.userId)
-              .maybeSingle()
-              .timeout(const Duration(seconds: 3), onTimeout: () => null),
+        child: StreamBuilder<List<Map<String, dynamic>>>(
+          stream: profileStream,
           builder: (context, snapshot) {
-            // Affiche un spinner court, mais si l'attente dure → on continue
-            // avec un fallback "Bonjour 🌸" pour ne pas bloquer l'app.
-            if (snapshot.connectionState == ConnectionState.waiting) {
+            if (snapshot.connectionState == ConnectionState.waiting &&
+                !snapshot.hasData) {
               return const Center(
                 child: Padding(
                   padding: EdgeInsets.all(40),
@@ -49,14 +41,26 @@ class _AcceuilState extends State<Acceuil> {
               );
             }
 
-            // Si Supabase indisponible (snapshot.hasError) ou pas de data,
-            // on affiche quand même l'UI — pas de blocage.
+            final profile = snapshot.hasData && snapshot.data!.isNotEmpty
+                ? snapshot.data!.first
+                : null;
+
             String salutation = 'Bonjour 🌸';
-            final data = snapshot.hasError ? null : snapshot.data;
-            if (data != null) {
-              final prenom = data['prenom'] as String?;
+            String? imageUrl;
+            Sexe sexe = Sexe.autre;
+
+            if (profile != null) {
+              final prenom = profile['prenom'] as String?;
               if (prenom != null && prenom.isNotEmpty) {
                 salutation = 'Bonjour $prenom 🌸';
+              }
+
+              imageUrl = profile['image_url'] as String?;
+              final genre = (profile['genre'] ?? '').toString().toLowerCase();
+              if (genre == 'homme') {
+                sexe = Sexe.homme;
+              } else if (genre == 'femme') {
+                sexe = Sexe.femme;
               }
             }
 
@@ -68,7 +72,7 @@ class _AcceuilState extends State<Acceuil> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // === Header ===
+                    const SizedBox(height: 12),
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
                       child: Row(
@@ -95,34 +99,56 @@ class _AcceuilState extends State<Acceuil> {
                               ],
                             ),
                           ),
-                          LogoutButton(onPressed: logout),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => ProfilPage(userId: widget.userId),
+                                ),
+                              );
+                            },
+                            child: CircleAvatar(
+                              radius: 22,
+                              backgroundColor: const Color(0xFFEDE7FF),
+                              backgroundImage: imageUrl != null
+                                  ? NetworkImage(imageUrl)
+                                  : null,
+                              child: imageUrl == null
+                                  ? ClipOval(
+                                      child: SizedBox(
+                                        width: 44,
+                                        height: 44,
+                                        child:
+                                            ProfilPhotoDefaut(genre: sexe),
+                                      ),
+                                    )
+                                  : null,
+                            ),
+                          ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 8),
-
-                    // === Carte phase courante ===
                     PhaseActuelle(
                       onTapQuestionnaire: () async {
                         await Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const ajouterHumeurQuestionnaire(),
+                            builder: (_) => const AjouterHumeurQuestionnaire(),
                           ),
                         );
                         setState(() {});
                       },
                     ),
                     const SizedBox(height: 16),
-
-                    // === Raccourci calendrier ===
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: GestureDetector(
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => CalendrierPage(),
+                            builder: (_) => const CalendrierPage(),
                           ),
                         ),
                         child: Container(
@@ -190,7 +216,10 @@ class _AcceuilState extends State<Acceuil> {
       bottomNavigationBar: Container(
         color: Colors.white,
         child: SafeArea(
-          child: Navigationbarboutton(userId: widget.userId),
+          child: Navigationbarboutton(
+            userId: widget.userId,
+            currentRoute: 'acceuil',
+          ),
         ),
       ),
     );
