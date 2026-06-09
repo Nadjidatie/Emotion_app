@@ -1,6 +1,6 @@
 import 'package:emotion_app/Pages/acceuil.dart';
 import 'package:emotion_app/Pages/ajouterHumeurQuestionnaire.dart';
-import 'package:emotion_app/Pages/calendrierPage.dart';
+import 'package:emotion_app/Pages/CalendrierPage.dart';
 import 'package:emotion_app/Pages/chat_page.dart';
 import 'package:emotion_app/Pages/statPage.dart';
 import 'package:emotion_app/widgets/menuItem.dart';

@@ -10,12 +10,6 @@ import 'package:emotion_app/widgets/selecteurPeriode.dart';
 import 'package:emotion_app/widgets/statCard.dart';
 import 'package:flutter/material.dart';
 
-/// Écran Statistiques — vue d'ensemble du score quotidien, des humeurs et
-/// de leur lien avec le cycle.
-///
-/// La page écoute [CycleService] : dès qu'un log est sauvegardé ou qu'un
-/// jour de règles est marqué depuis l'accueil, les graphiques se mettent
-/// à jour automatiquement.
 class StatPage extends StatefulWidget {
   final String userId;
   const StatPage({super.key, required this.userId});
@@ -50,7 +44,6 @@ class _StatPageState extends State<StatPage> {
     final logsPeriode =
         StatistiquesService.logsDeLaPeriode(tousLesLogs, _periode);
 
-    // === Agrégats pour les blocs ===
     final scoreMoyen = StatistiquesService.scoreMoyen(logsPeriode);
     final sommeilMoyen = StatistiquesService.sommeilMoyen(logsPeriode);
     final totalSymptomes =
@@ -88,14 +81,12 @@ class _StatPageState extends State<StatPage> {
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.only(top: 8, bottom: 32),
             children: [
-              // === Sélecteur de période ===
               SelecteurPeriode(
                 selection: _periode,
                 onChanged: (p) => setState(() => _periode = p),
               ),
               const SizedBox(height: 16),
 
-              // === Évolution du score ===
               StatCard(
                 titre: 'Évolution de ton score',
                 sousTitre: 'Chaque point = un jour rempli',
@@ -107,7 +98,6 @@ class _StatPageState extends State<StatPage> {
               ),
               const SizedBox(height: 14),
 
-              // === Répartition des humeurs ===
               StatCard(
                 titre: 'Répartition des humeurs',
                 sousTitre: 'Sur les ${_periode.jours} derniers jours',
@@ -117,7 +107,6 @@ class _StatPageState extends State<StatPage> {
               ),
               const SizedBox(height: 14),
 
-              // === Lien avec le cycle ===
               StatCard(
                 titre: 'Lien avec ton cycle',
                 sousTitre: 'Score moyen par phase',
@@ -127,7 +116,6 @@ class _StatPageState extends State<StatPage> {
               ),
               const SizedBox(height: 14),
 
-              // === Tendances ===
               if (tendances.isNotEmpty) ...[
                 StatCard(
                   titre: 'Tendances',
@@ -146,7 +134,6 @@ class _StatPageState extends State<StatPage> {
                 const SizedBox(height: 14),
               ],
 
-              // === Stats rapides (grid 2×2) ===
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: GridView.count(

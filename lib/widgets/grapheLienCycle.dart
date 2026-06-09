@@ -3,10 +3,6 @@ import 'package:emotion_app/services/statistiqueService.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
-/// BarChart : score moyen par phase du cycle.
-///
-/// C'est le graphique "signature" du projet — il connecte explicitement
-/// les humeurs au cycle menstruel, ce qui est l'idée centrale de l'app.
 class GrapheLienCycle extends StatelessWidget {
   final List<StatsParPhase> stats;
 
@@ -35,7 +31,6 @@ class GrapheLienCycle extends StatelessWidget {
       );
     }
 
-    // Phase championne (uniquement parmi celles qui ont des données).
     final triees = [...phasesAvecDonnees]
       ..sort((a, b) => b.scoreMoyen.compareTo(a.scoreMoyen));
     final championne = triees.first;

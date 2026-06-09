@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Une ligne du bloc "Tendances" : emoji + phrase courte.
-///
-/// Réutilisable pour n'importe quelle liste d'insights (ex: aussi pour
-/// le chatbot quand on lui passera le contexte).
 class InsightLigne extends StatelessWidget {
   final String emoji;
   final String texte;

@@ -1,13 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Une humeur sélectionnable dans le questionnaire.
-///
-/// Chaque humeur a :
-///  - une clé stable [cle] sauvegardée en base
-///  - un libellé affiché à l'écran
-///  - une icône + couleur pour le rendu
-///  - une valeur 1-10 (poids émotionnel) utilisée pour recalculer
-///    le score quotidien à partir de la sélection.
 class HumeurOption {
   final String cle;
   final String libelle;
@@ -112,7 +104,6 @@ class HumeurCatalogue {
     irritable,
   ];
 
-  /// Récupère l'option à partir de sa clé. Renvoie null si inconnue.
   static HumeurOption? parCle(String cle) {
     for (final h in toutes) {
       if (h.cle == cle) return h;
@@ -120,12 +111,7 @@ class HumeurCatalogue {
     return null;
   }
 
-  
-  /// Sert à alimenter `scoreQuotidien` qui utilise toujours
-  /// une valeur numérique pour la formule
-  ///     score = (humeur × 0.4) + (sommeil × 0.3) − (stress × 0.3)
-  ///
-  /// Si aucune humeur n'est sélectionnée, renvoie 5.0 (neutre).
+  // retourne la moyenne des valeurs des humeurs sélectionnées (5.0 si vide)
   static double valeurMoyenne(List<String> cles) {
     if (cles.isEmpty) return 5.0;
     double total = 0;

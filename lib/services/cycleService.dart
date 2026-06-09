@@ -11,19 +11,14 @@ class CycleService extends ChangeNotifier {
   final _supabase = Supabase.instance.client;
 
   DateTime _dernieresRegles = DateTime.now().subtract(const Duration(days: 12));
+  // valeur de base chargée depuis Supabase, pour pouvoir restaurer si on démarque
+  DateTime _dernieresReglesBase = DateTime.now().subtract(const Duration(days: 12));
   int _longueurCycle = 28;
   int _dureeRegles = 5;
   final Map<String, JournalQuotidien> _logs = {};
 
-  /// Jours explicitement marqués comme "règles" par l'utilisatrice via la
-  /// barre rapide de l'accueil (style Flo).
-  /// Les clés sont au format 'YYYY-MM-DD' (voir [_cle]).
-  ///
-  /// Source de vérité prioritaire : si une date est dans ce set, elle est
-  /// considérée comme jour de règles, indépendamment du calcul de phase.
+  // jours marqués manuellement par l'utilisatrice (format 'YYYY-MM-DD')
   final Set<String> _joursReglesMarques = {};
-
-  // === Getters ===
 
   DateTime get dernieresRegles => _dernieresRegles;
   int get longueurCycle => _longueurCycle;
@@ -32,14 +27,9 @@ class CycleService extends ChangeNotifier {
   List<JournalQuotidien> get tousLesLogs =>
       _logs.values.toList()..sort((a, b) => a.date.compareTo(b.date));
 
-  /// Est-ce que [date] a été marquée à la main comme jour de règles ?
   bool estJourReglesMarque(DateTime date) =>
       _joursReglesMarques.contains(_cle(date));
 
-  // === Initialisation depuis Supabase ========================================
-
-  /// À appeler au démarrage (ex: dans AuthGate ou Accueil).
-  /// Charge les paramètres du cycle ET tous les logs depuis Supabase.
   Future<void> initialiserDepuisSupabase() async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return;
@@ -65,6 +55,7 @@ class CycleService extends ChangeNotifier {
       if (data['dernieres_regles'] != null) {
         _dernieresRegles =
             DateTime.tryParse(data['dernieres_regles']) ?? _dernieresRegles;
+        _dernieresReglesBase = _dernieresRegles;
       }
       if (data['longueur_cycle'] != null) {
         _longueurCycle = data['longueur_cycle'] as int;
@@ -95,9 +86,6 @@ class CycleService extends ChangeNotifier {
     }
   }
 
-  // === Paramètres du cycle ===================================================
-
-  /// Met à jour les paramètres localement ET dans Supabase (table profiles).
   Future<void> definirParametresCycle({
     required DateTime dernieresRegles,
     int? longueurCycle,
@@ -122,9 +110,6 @@ class CycleService extends ChangeNotifier {
     }
   }
 
-  // === Logs quotidiens =======================================================
-
-  /// Sauvegarde un log localement ET dans Supabase.
   Future<void> sauvegarderLog(JournalQuotidien log) async {
     _logs[_cle(log.date)] = log;
     notifyListeners();
@@ -145,7 +130,6 @@ class CycleService extends ChangeNotifier {
     }
   }
 
-  /// Charge en masse depuis une liste (MockData ou migration).
   void chargerLogs(Iterable<JournalQuotidien> logs) {
     for (final log in logs) {
       _logs[_cle(log.date)] = log;
@@ -153,10 +137,7 @@ class CycleService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Récupère le log d'une date donnée, ou null s'il n'existe pas.
   JournalQuotidien? logPour(DateTime date) => _logs[_cle(date)];
-
-  // === Logique cycle =========================================================
 
   int jourDuCycle(DateTime date) {
     final diff = _dateOnly(date).difference(_dateOnly(_dernieresRegles)).inDays;
@@ -176,17 +157,10 @@ class CycleService extends ChangeNotifier {
     return CyclePhase.luteale;
   }
 
-  /// Vrai si [date] est un jour de règles, soit parce qu'il a été marqué à
-  /// la main, soit parce qu'il tombe dans la phase menstruelle calculée.
   bool estJourDeRegles(DateTime date) =>
       estJourReglesMarque(date) ||
       phasePour(date) == CyclePhase.menstruelle;
 
-  /// Marque (ou démarque) [date] comme jour de règles.
-  ///
-  /// Quand on marque un jour, on essaie aussi de recaler le début du
-  /// dernier cycle ([_dernieresRegles]) sur le premier jour contigu marqué,
-  /// pour que la prédiction des phases suive ce que l'utilisatrice a saisi.
   Future<void> marquerJourRegles(DateTime date, bool marque) async {
     final cle = _cle(date);
     if (marque) {
@@ -194,14 +168,24 @@ class CycleService extends ChangeNotifier {
       _recalibrerDernieresRegles(date);
     } else {
       _joursReglesMarques.remove(cle);
+      _restaurerOuRecalibrer();
     }
     notifyListeners();
-    // TODO (étape 4) : persister _joursReglesMarques dans Supabase.
+    // TODO: persister _joursReglesMarques dans Supabase
   }
 
-  /// Cherche le premier jour contigu marqué dans la fenêtre proche de [date]
-  /// (jusqu'à 10 jours en arrière) et place [_dernieresRegles] dessus si
-  /// c'est plus pertinent que la valeur actuelle.
+  void _restaurerOuRecalibrer() {
+    if (_joursReglesMarques.isEmpty) {
+      _dernieresRegles = _dernieresReglesBase;
+      return;
+    }
+    final dates = _joursReglesMarques
+        .map((s) => DateTime.parse(s))
+        .toList()
+      ..sort((a, b) => b.compareTo(a));
+    _recalibrerDernieresRegles(dates.first);
+  }
+
   void _recalibrerDernieresRegles(DateTime date) {
     DateTime premierJourBloc = _dateOnly(date);
     for (int i = 1; i <= 10; i++) {
@@ -212,9 +196,6 @@ class CycleService extends ChangeNotifier {
         break;
       }
     }
-    // On ne déplace _dernieresRegles que si le bloc nouvellement saisi est
-    // plus récent que la dernière valeur connue (évite de remonter dans le
-    // temps à cause d'une saisie sur un ancien mois).
     final actuel = _dateOnly(_dernieresRegles);
     if (premierJourBloc.isAfter(actuel) ||
         premierJourBloc.difference(actuel).inDays.abs() <= 3) {
@@ -228,8 +209,6 @@ class CycleService extends ChangeNotifier {
     final joursRestants = _longueurCycle - jourActuel + 1;
     return aujourdhui.add(Duration(days: joursRestants));
   }
-
-  // === Helpers privés ========================================================
 
   static String _cle(DateTime date) {
     final d = _dateOnly(date);

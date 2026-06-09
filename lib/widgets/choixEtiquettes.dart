@@ -1,11 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Wrap de chips sélectionnables — multi-sélection ou sélection unique.
-///
-/// Réutilisé pour :
-///  - les symptômes (multi-sélection)
-///  - le type d'activité physique (sélection unique)
-///  - les humeurs spécifiques (multi-sélection)
 class ChoixEtiquettes extends StatelessWidget {
   final List<String> options;
   final List<String> selection;

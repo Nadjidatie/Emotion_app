@@ -4,11 +4,6 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-/// Courbe d'évolution du score quotidien sur la période sélectionnée.
-///
-/// - Une entrée par jour de la période (manque = trou)
-/// - Chaque point est colorié avec [JournalQuotidien.couleurDuJour]
-/// - Une bande dégradée violette sous la courbe pour le côté "Flo"
 class GrapheEvolutionScore extends StatelessWidget {
   final List<JournalQuotidien> logs;
   final PeriodeStats periode;
@@ -25,8 +20,6 @@ class GrapheEvolutionScore extends StatelessWidget {
       return const _EtatVide();
     }
 
-    // On indexe les logs par jour pour pouvoir parcourir la période complète
-    // et placer un point uniquement sur les jours remplis.
     final parDate = <String, JournalQuotidien>{};
     for (final l in logs) {
       parDate[_cleJour(l.date)] = l;
@@ -47,8 +40,6 @@ class GrapheEvolutionScore extends StatelessWidget {
       }
     }
 
-    // Si on a au moins 1 point, on dessine la courbe — sinon on garde
-    // une grille vide avec un message.
     if (spots.length < 2) {
       return _EtatPeuDeDonnees(nbPoints: spots.length);
     }
@@ -168,7 +159,6 @@ class GrapheEvolutionScore extends StatelessWidget {
               dotData: FlDotData(
                 show: true,
                 getDotPainter: (spot, percent, bar, index) {
-                  // index ici porte sur l'ordre des spots, pas l'index de jour
                   final couleur = index < couleursPoints.length
                       ? couleursPoints[index]
                       : const Color(0xFFB79CED);
@@ -187,7 +177,6 @@ class GrapheEvolutionScore extends StatelessWidget {
     );
   }
 
-  // Choisit la fréquence des labels sur l'axe X pour éviter le chevauchement.
   double _intervalleLabelsX() {
     switch (periode) {
       case PeriodeStats.semaine:
