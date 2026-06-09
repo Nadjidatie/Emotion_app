@@ -1,10 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:emotion_app/model/cycle_phase.dart';
 import 'package:emotion_app/services/cycleService.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
-import '../models/cycle_phase.dart';
 
 
 class PhaseActuelle  extends StatefulWidget {
@@ -50,20 +47,22 @@ class _PhaseActuelleState extends State<PhaseActuelle > {
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
+        // Légèrement plus foncé que la version précédente (0.85/0.55)
+        // pour mieux ressortir sur le fond clair de l'accueil.
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            info.couleur.withOpacity(0.85),
-            info.couleur.withOpacity(0.55),
+            info.couleur,
+            info.couleur.withOpacity(0.78),
           ],
         ),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: info.couleur.withOpacity(0.25),
-            blurRadius: 14,
-            offset: const Offset(0, 6),
+            color: info.couleur.withOpacity(0.4),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
           ),
         ],
       ),

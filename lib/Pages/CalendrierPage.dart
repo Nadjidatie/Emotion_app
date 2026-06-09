@@ -505,7 +505,6 @@ class _FicheJour extends StatelessWidget {
             extra: '${log.heuresSommeil.toStringAsFixed(1)} h'),
         _ligneStat('Stress', log.stress),
         _ligneStat('Énergie', log.energie),
-        _ligneStat('Libido', log.libido),
         const SizedBox(height: 12),
         Text(
           'Activité : ${log.activite}',

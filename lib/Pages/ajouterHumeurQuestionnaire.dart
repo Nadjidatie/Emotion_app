@@ -26,7 +26,6 @@ class _AjouterHumeurQuestionnaireState extends State<AjouterHumeurQuestionnaire>
   double _sommeil = 5;
   double _stress = 5;
   double _energie = 5;
-  double _libido = 5;
   double _heuresSommeil = 7;
   String _activite = 'Aucun';
   List<String> _symptomes = [];
@@ -49,7 +48,6 @@ class _AjouterHumeurQuestionnaireState extends State<AjouterHumeurQuestionnaire>
     'Acné',
     'Douleurs poitrine',
     'Sautes d\'humeur',
-    'Libido haute',
     'Énergique',
     'Anxiété',
   ];
@@ -64,7 +62,6 @@ class _AjouterHumeurQuestionnaireState extends State<AjouterHumeurQuestionnaire>
       _sommeil = existant.sommeil;
       _stress = existant.stress;
       _energie = existant.energie;
-      _libido = existant.libido;
       _heuresSommeil = existant.heuresSommeil;
       _activite = existant.activite;
       _symptomes = List.of(existant.symptomes);
@@ -85,7 +82,6 @@ class _AjouterHumeurQuestionnaireState extends State<AjouterHumeurQuestionnaire>
       sommeil: _sommeil,
       stress: _stress,
       energie: _energie,
-      libido: _libido,
       heuresSommeil: _heuresSommeil,
       estMenstruation: CycleService.instance.estJourDeRegles(_date),
       activite: _activite,
@@ -236,18 +232,6 @@ class _AjouterHumeurQuestionnaireState extends State<AjouterHumeurQuestionnaire>
                         labelMax: 'Pleine d\'énergie',
                         couleur: const Color(0xFFF5C97E),
                         onChanged: (v) => setState(() => _energie = v),
-                      ),
-                    ),
-
-                    QuestionCard(
-                      titre: 'Libido',
-                      icone: Icons.favorite,
-                      child: SliderQuestion(
-                        valeur: _libido,
-                        labelMin: 'Faible',
-                        labelMax: 'Forte',
-                        couleur: const Color(0xFFD88FB5),
-                        onChanged: (v) => setState(() => _libido = v),
                       ),
                     ),
 

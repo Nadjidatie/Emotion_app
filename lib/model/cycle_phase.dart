@@ -66,7 +66,7 @@ class CyclePhaseInfo {
           description:
               'Tu es au pic de ton énergie et de ta confiance. Sociable, séduisante, performante.',
           hormones:
-              'Pic d\'œstrogènes et de LH. La testostérone monte aussi : libido élevée.',
+              'Le pic d\'œstrogènes déclenche l\'ovulation. La testostérone augmente aussi, boostant la  et la compétitivité.',
           conseil:
               'C\'est le moment des présentations, rendez-vous importants et entraînements intenses.',
           couleur: Color(0xFFF5C97E), // jaune doré

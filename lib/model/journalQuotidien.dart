@@ -14,7 +14,6 @@ class JournalQuotidien {
   final double sommeil;
   final double stress;
   final double energie;
-  final double libido;
 
   /// Heures de sommeil (0-12)
   final double heuresSommeil;
@@ -36,7 +35,7 @@ class JournalQuotidien {
     required this.sommeil,
     required this.stress,
     required this.energie,
-    required this.libido,
+
     required this.heuresSommeil,
     required this.estMenstruation,
     required this.activite,
@@ -82,7 +81,6 @@ class JournalQuotidien {
         'sommeil': sommeil,
         'stress': stress,
         'energie': energie,
-        'libido': libido,
         'heures_sommeil': heuresSommeil,
         'est_menstruation': estMenstruation,
         'activite': activite,
@@ -100,7 +98,6 @@ class JournalQuotidien {
         sommeil: (json['sommeil'] as num).toDouble(),
         stress: (json['stress'] as num).toDouble(),
         energie: (json['energie'] as num).toDouble(),
-        libido: (json['libido'] as num).toDouble(),
         heuresSommeil: (json['heures_sommeil'] as num).toDouble(),
         estMenstruation: json['est_menstruation'] as bool,
         activite: json['activite'] as String,
