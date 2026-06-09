@@ -171,7 +171,19 @@ class CycleService extends ChangeNotifier {
       _restaurerOuRecalibrer();
     }
     notifyListeners();
-    // TODO: persister _joursReglesMarques dans Supabase
+    await _sauvegarderDernieresRegles();
+  }
+
+  Future<void> _sauvegarderDernieresRegles() async {
+    final userId = _supabase.auth.currentUser?.id;
+    if (userId == null) return;
+    try {
+      await _supabase.from('profiles').update({
+        'dernieres_regles': _dernieresRegles.toIso8601String().substring(0, 10),
+      }).eq('id', userId);
+    } catch (e) {
+      print('ERREUR sauvegarde dernieres_regles: $e');
+    }
   }
 
   void _restaurerOuRecalibrer() {
