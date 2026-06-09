@@ -46,22 +46,22 @@ class CycleService extends ChangeNotifier {
     try {
       final data = await _supabase
           .from('profiles')
-          .select('dernieres_regles, longueur_cycle, duree_regles')
+          .select('dernieres-regles, longueur-cycle, duree-regles')
           .eq('id', userId)
           .maybeSingle();
 
       if (data == null) return;
 
-      if (data['dernieres_regles'] != null) {
+      if (data['dernieres-regles'] != null) {
         _dernieresRegles =
-            DateTime.tryParse(data['dernieres_regles']) ?? _dernieresRegles;
+            DateTime.tryParse(data['dernieres-regles']) ?? _dernieresRegles;
         _dernieresReglesBase = _dernieresRegles;
       }
-      if (data['longueur_cycle'] != null) {
-        _longueurCycle = data['longueur_cycle'] as int;
+      if (data['longueur-cycle'] != null) {
+        _longueurCycle = data['longueur-cycle'] as int;
       }
-      if (data['duree_regles'] != null) {
-        _dureeRegles = data['duree_regles'] as int;
+      if (data['duree-regles'] != null) {
+        _dureeRegles = data['duree-regles'] as int;
       }
     } catch (e) {
       print('ERREUR _chargerParametres: $e');
@@ -101,9 +101,9 @@ class CycleService extends ChangeNotifier {
 
     try {
       await _supabase.from('profiles').update({
-        'dernieres_regles': dernieresRegles.toIso8601String().substring(0, 10),
-        'longueur_cycle': _longueurCycle,
-        'duree_regles': _dureeRegles,
+        'dernieres-regles': dernieresRegles.toIso8601String().substring(0, 10),
+        'longueur-cycle': _longueurCycle,
+        'duree-regles': _dureeRegles,
       }).eq('id', userId);
     } catch (e) {
       print('ERREUR sauvegarde paramètres cycle: $e');
@@ -179,10 +179,10 @@ class CycleService extends ChangeNotifier {
     if (userId == null) return;
     try {
       await _supabase.from('profiles').update({
-        'dernieres_regles': _dernieresRegles.toIso8601String().substring(0, 10),
+        'dernieres-regles': _dernieresRegles.toIso8601String().substring(0, 10),
       }).eq('id', userId);
     } catch (e) {
-      print('ERREUR sauvegarde dernieres_regles: $e');
+      print('ERREUR sauvegarde dernieres-regles: $e');
     }
   }
 
