@@ -4,6 +4,32 @@ Application mobile Flutter de suivi du cycle menstruel et des émotions, avec ba
 
 ---
 
+## Objectifs
+
+L'application vise à aider les utilisatrices à mieux comprendre les liens entre leur cycle menstruel et leur bien-être émotionnel. L'idée centrale est que les fluctuations hormonales influencent l'humeur, l'énergie et le sommeil — et que visualiser ces corrélations sur la durée permet de mieux se connaître et d'anticiper les variations de forme.
+
+Les objectifs concrets sont :
+- permettre un suivi quotidien rapide (questionnaire en moins de deux minutes)
+- calculer automatiquement la phase du cycle et afficher des conseils adaptés
+- produire des statistiques et tendances personnalisées sur la période choisie
+- offrir une expérience bienveillante et non médicale, centrée sur l'auto-observation
+
+---
+
+## Choix d'architecture
+
+**Flutter** a été choisi pour disposer d'une seule base de code déployable sur iOS et Android, avec un rendu natif performant.
+
+**Supabase** remplace un backend custom : il fournit l'authentification (email/password), une base PostgreSQL hébergée et un SDK Dart prêt à l'emploi, ce qui évite de gérer un serveur.
+
+**`CycleService` (singleton `ChangeNotifier`)** centralise tout l'état lié au cycle : calcul de phase, marquage des jours de règles, synchronisation avec Supabase. Les widgets s'y abonnent via `addListener` pour se rafraîchir automatiquement. Ce pattern a été préféré à Provider ou Riverpod pour rester simple dans le cadre d'un projet universitaire.
+
+**`StatistiquesService` (classe statique)** regroupe tous les calculs d'analyse (score moyen, tendances, répartition des humeurs) sous forme de méthodes pures sans état. Cela facilite les tests et sépare clairement la logique de présentation.
+
+Les **modèles** (`JournalQuotidien`, `CyclePhase`, `HumeurOption`) sont des classes Dart simples avec `toJson`/`fromJson` pour la sérialisation Supabase. Le score quotidien est calculé côté client pour rester indépendant du backend.
+
+---
+
 ## Fonctionnalités
 
 ### Accueil
@@ -126,6 +152,16 @@ lib/
 | `symptomes` | text | Liste JSON des symptômes |
 | `note` | text | Note libre |
 | `score` | float | Score quotidien calculé |
+
+---
+
+## Ce que nous aurions aimé avoir le temps de faire
+
+- **Persistance des jours de règles marqués** : les jours cochés dans le sélecteur sont actuellement en mémoire uniquement. Nous aurions voulu les sauvegarder dans une table dédiée pour les restaurer à chaque ouverture de l'application.
+- **Notifications push** : rappel quotidien pour remplir le questionnaire, et alerte quelques jours avant les prochaines règles prévues.
+- **Historique multi-cycles** : afficher plusieurs cycles passés dans le calendrier avec des statistiques comparatives entre cycles.
+- **Personnalisation du score** : permettre à l'utilisatrice de pondérer elle-même les critères (humeur, sommeil, stress) selon ce qui compte le plus pour elle.
+- **Export des données** : générer un PDF ou CSV du journal pour partager avec un médecin.
 
 ---
 
