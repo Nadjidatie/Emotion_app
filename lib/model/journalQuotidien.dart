@@ -16,13 +16,13 @@ class JournalQuotidien {
 
   final String? note;
 
-  const JournalQuotidien({
+  JournalQuotidien({
     required this.date,
     required this.humeurs,
     required this.sommeil,
     required this.stress,
     required this.energie,
-    required this.libido,
+    this.libido = 5.0,
     required this.heuresSommeil,
     required this.estMenstruation,
     required this.activite,
